@@ -1,0 +1,99 @@
+<div class="site-header" id="site-header">
+	<div class="primary-nav">
+		<a class="brand" href="#top" aria-label="GuesthouseBD home"><img src="/assets/logo/logo.png" alt="GuesthouseBD" /></a>
+		<nav class="category-tabs" aria-label="Explore categories" data-i18n-aria-label="nav.explore">
+			<a class="category-tab is-active" data-section="top" href="#top" aria-current="page"><span class="category-icon">🌍</span><span data-i18n="nav.all">All</span></a>
+			<a class="category-tab" data-section="stays" href="#stays"><span class="category-icon">⌂</span><span data-i18n="nav.stays">Stays</span></a>
+			<a class="category-tab" data-section="ride" href="#ride"><span class="category-icon">↗</span><span data-i18n="nav.ride">Pick &amp; drop</span></a>
+			<a class="category-tab" data-section="people" href="#people"><span class="category-icon">✦</span><span data-i18n="nav.guides">Guides</span></a>
+		</nav>
+		<div class="compact-search" aria-label="Current search" data-i18n-aria-label="search.current">
+			<button type="button" data-search-open="destination"><span class="compact-value" data-summary="destination">Anywhere</span></button>
+			<span class="compact-divider" aria-hidden="true"></span>
+			<button type="button" data-search-open="dates"><span class="compact-value" data-summary="dates">Add dates</span></button>
+			<span class="compact-divider" aria-hidden="true"></span>
+			<button type="button" data-search-open="guests"><span class="compact-value" data-summary="guests">Add guests</span></button>
+			<button class="compact-submit" id="compact-submit" type="button" data-submit-search aria-label="Search stays">⌕</button>
+		</div>
+		<div class="nav-actions">
+			<div class="language-picker" id="language-picker">
+				<button class="language-trigger" id="language-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Choose language">
+					<span class="language-symbol" aria-hidden="true">文</span>
+					<span class="language-label" id="language-label">English</span>
+				</button>
+				<ul class="language-menu" id="language-menu" role="listbox" aria-label="Select language" hidden>
+					<li><button class="lang-option is-selected" type="button" data-lang="en" role="option" aria-selected="true">English</button></li>
+					<li><button class="lang-option" type="button" data-lang="bn" role="option" aria-selected="false">বাংলা</button></li>
+					<li><button class="lang-option" type="button" data-lang="zh" role="option" aria-selected="false">中文</button></li>
+					<li><button class="lang-option" type="button" data-lang="ru" role="option" aria-selected="false">Русский</button></li>
+					<li><button class="lang-option" type="button" data-lang="it" role="option" aria-selected="false">Italiano</button></li>
+					<li><button class="lang-option" type="button" data-lang="fr" role="option" aria-selected="false">Français</button></li>
+					<li><button class="lang-option" type="button" data-lang="hi" role="option" aria-selected="false">हिन्दी</button></li>
+				</ul>
+				<select id="language-select" class="sr-only" aria-label="Choose language">
+					<option value="en">English</option>
+					<option value="bn">বাংলা</option>
+					<option value="zh">中文</option>
+					<option value="ru">Русский</option>
+					<option value="it">Italiano</option>
+					<option value="fr">Français</option>
+					<option value="hi">हिन्दी</option>
+				</select>
+			</div>
+			<button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark theme" title="Switch to dark theme"><span data-theme-icon aria-hidden="true">☾</span></button>
+			<a class="host-link" href="#join" data-i18n="nav.host">List your place</a>
+			<a class="menu-button" href="#join" aria-label="Sign up or open your account" data-i18n-aria-label="nav.account"><span aria-hidden="true">◉</span><span aria-hidden="true">☰</span></a>
+		</div>
+	</div>
+	<div class="search-row">
+		<form class="search-expanded" id="travel-search" autocomplete="off">
+			<button class="search-segment" type="button" data-search-open="destination" aria-expanded="false">
+				<span class="segment-title" data-i18n="search.where">Where to?</span><span class="segment-value" data-summary="destination">Search destinations</span>
+			</button>
+			<button class="search-segment" type="button" data-search-open="dates" aria-expanded="false">
+				<span class="segment-title" data-i18n="search.when">When?</span><span class="segment-value" data-summary="dates">Add dates</span>
+			</button>
+			<button class="search-segment" type="button" data-search-open="guests" aria-expanded="false">
+				<span class="segment-title" data-i18n="search.who">Who?</span><span class="segment-value" data-summary="guests">Add guests</span>
+			</button>
+			<button class="search-submit" type="submit"><span aria-hidden="true">⌕</span><span data-i18n="search.search">Search</span></button>
+		</form>
+	</div>
+	<div class="search-popover" id="search-popover" role="dialog" aria-label="Search stays" data-i18n-aria-label="search.searchStays" hidden>
+		<button class="popover-close" id="popover-close" type="button" aria-label="Close search" data-i18n-aria-label="search.close">×</button>
+		<section class="popover-panel" data-search-panel="destination" hidden>
+			<h2 data-i18n="search.where">Where to?</h2>
+			<label class="destination-input"><span class="sr-only" data-i18n="search.destinations">Search destinations</span><input id="destination-input" type="search" placeholder="Search destinations" data-i18n-placeholder="search.destinations" /></label>
+			<p class="popover-kicker" data-i18n="search.popular">Popular destinations</p>
+			<div class="destination-suggestions" id="destination-suggestions" role="listbox" aria-label="Popular destinations" data-i18n-aria-label="search.popular"></div>
+		</section>
+		<section class="popover-panel date-panel" data-search-panel="dates" hidden>
+			<div class="date-layout">
+				<aside class="date-presets" aria-label="Flexible date options">
+					<button type="button" data-date-preset="today"><strong data-i18n="search.today">Today</strong><span data-i18n="search.oneNight">One night</span></button>
+					<button type="button" data-date-preset="tomorrow"><strong data-i18n="search.tomorrow">Tomorrow</strong><span data-i18n="search.oneNight">One night</span></button>
+					<button type="button" data-date-preset="weekend"><strong data-i18n="search.weekend">This weekend</strong><span data-i18n="search.twoNights">Two nights</span></button>
+				</aside>
+				<div class="calendar-area">
+					<div class="calendar-toolbar">
+						<button type="button" id="calendar-prev" aria-label="Previous month" data-i18n-aria-label="search.previousMonth">‹</button>
+						<button type="button" id="calendar-next" aria-label="Next month" data-i18n-aria-label="search.nextMonth">›</button>
+					</div>
+					<div class="calendar-months" id="calendar-months"></div>
+					<p class="calendar-status" id="calendar-status" aria-live="polite" data-i18n="search.pickCheckIn">Choose a check-in date</p>
+				</div>
+			</div>
+		</section>
+		<section class="popover-panel guests-panel" data-search-panel="guests" hidden>
+			<h2 data-i18n="search.coming">Who’s coming?</h2>
+			<div class="guest-row"><div><strong data-i18n="search.adults">Adults</strong><span data-i18n="search.adultAge">Ages 13 or above</span></div><div class="stepper"><button type="button" data-guest-step="-1" data-guest-type="adults" aria-label="Remove an adult" data-i18n-aria-label="search.removeAdult">−</button><output id="count-adults">1</output><button type="button" data-guest-step="1" data-guest-type="adults" aria-label="Add an adult" data-i18n-aria-label="search.addAdult">+</button></div></div>
+			<div class="guest-row"><div><strong data-i18n="search.children">Children</strong><span data-i18n="search.childrenAge">Ages 2–12</span></div><div class="stepper"><button type="button" data-guest-step="-1" data-guest-type="children" aria-label="Remove a child" data-i18n-aria-label="search.removeChild">−</button><output id="count-children">0</output><button type="button" data-guest-step="1" data-guest-type="children" aria-label="Add a child" data-i18n-aria-label="search.addChild">+</button></div></div>
+			<div class="guest-row"><div><strong data-i18n="search.infants">Infants</strong><span data-i18n="search.infantAge">Under 2</span></div><div class="stepper"><button type="button" data-guest-step="-1" data-guest-type="infants" aria-label="Remove an infant" data-i18n-aria-label="search.removeInfant">−</button><output id="count-infants">0</output><button type="button" data-guest-step="1" data-guest-type="infants" aria-label="Add an infant" data-i18n-aria-label="search.addInfant">+</button></div></div>
+		</section>
+	</div>
+</div>
+
+<section class="panel hero" id="top" aria-label="GuesthouseBD">
+	<div class="arches" id="arches"></div>
+</section>
+<div class="scroll-sentinel" id="compact-sentinel" aria-hidden="true"></div>
