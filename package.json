@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "astro": "^7.3.6",
-    "i18next": "^26.4.2"
+    "i18next": "^26.4.2",
+    "motion": "^14.0.0"
   },
   "allowScripts": {
     "esbuild": true

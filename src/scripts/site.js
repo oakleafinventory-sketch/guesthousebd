@@ -1,4 +1,5 @@
 import i18next from 'i18next';
+import { animate } from 'motion';
 import { languages, resources } from '../i18n/locales.js';
 
 function getSavedLanguage() {
@@ -16,6 +17,56 @@ i18n.init({ lng: initialLanguage, fallbackLng: 'en', resources, interpolation: {
 const t = (key, options) => i18n.t(key, options);
 const localeInfo = () => languages.find((language) => language.code === i18n.language) || languages[0];
 const formatNumber = (value, options) => new Intl.NumberFormat(localeInfo().intl, options).format(value);
+const currencyCacheKey = 'guesthouse-currency-rates';
+let currencyRates = { usd: 1 };
+
+try {
+	const cachedRates = JSON.parse(localStorage.getItem(currencyCacheKey));
+	if (cachedRates?.rates?.usd === 1 && Date.now() - cachedRates.fetchedAt < 7 * 24 * 60 * 60 * 1000) currencyRates = cachedRates.rates;
+} catch {
+	// Currency rates will be fetched for this page view.
+}
+
+function formatMoney(amount, currency) {
+	const rate = currencyRates[currency.toLowerCase()];
+	if (!Number.isFinite(rate)) return `${currency} —`;
+	const value = amount * rate;
+	return new Intl.NumberFormat(localeInfo().intl, { style: 'currency', currency, currencyDisplay: 'code', maximumFractionDigits: 0 }).format(value);
+}
+
+function currencyCodes() {
+	return [...new Set(['USD', 'BDT', localeInfo().currency])];
+}
+
+function renderCurrencyAmounts(amount, excludedCurrencies = []) {
+	return currencyCodes()
+		.filter((currency) => !excludedCurrencies.includes(currency))
+		.map((currency) => `<span>${formatMoney(amount, currency)}</span>`)
+		.join('');
+}
+
+function formatCurrencyBreakdown(amount) {
+	return currencyCodes().map((currency) => formatMoney(amount, currency)).join(' · ');
+}
+
+async function loadCurrencyRates() {
+	try {
+		const response = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json', { signal: AbortSignal.timeout(8000) });
+		if (!response.ok) throw new Error(`Currency rates request failed: ${response.status}`);
+		const data = await response.json();
+		if (data.usd?.usd !== 1 || !languages.every(({ currency }) => Number.isFinite(data.usd[currency.toLowerCase()]))) throw new Error('Currency rates response is incomplete');
+		currencyRates = data.usd;
+		try {
+			localStorage.setItem(currencyCacheKey, JSON.stringify({ fetchedAt: Date.now(), rates: currencyRates }));
+		} catch {
+			// The live rates still apply for this page view.
+		}
+		renderDestinationCards();
+		renderPeopleCards();
+	} catch {
+		// Keep the last-known rates when the rate service is unavailable.
+	}
+}
 
 function syncLanguagePicker() {
 	if (!languageSelect || !languageLabel || !languageMenu) return;
@@ -55,6 +106,20 @@ function applyTranslations() {
 const imageUrl = (id, width = 700) => `https://images.unsplash.com/${id}?w=${width}&q=80`;
 const byId = (id) => document.getElementById(id);
 const query = (selector) => document.querySelector(selector);
+const reducedMotionPreference = matchMedia('(prefers-reduced-motion: reduce)');
+const ambientVideos = [...document.querySelectorAll('.ambient-video')];
+function syncAmbientVideoMotion() {
+	ambientVideos.forEach((video) => {
+		if (reducedMotionPreference.matches || document.hidden) {
+			video.pause();
+			return;
+		}
+		video.play().catch(() => {});
+	});
+}
+syncAmbientVideoMotion();
+reducedMotionPreference.addEventListener('change', syncAmbientVideoMotion);
+document.addEventListener('visibilitychange', syncAmbientVideoMotion);
 
 const arches = byId('arches');
 const fan = byId('fan');
@@ -92,6 +157,9 @@ function getSavedTheme() {
 }
 function applyTheme(theme, save = false) {
 	document.documentElement.dataset.theme = theme;
+	document.querySelectorAll('[data-theme-logo-light][data-theme-logo-dark]').forEach((logo) => {
+		logo.src = theme === 'dark' ? logo.dataset.themeLogoDark : logo.dataset.themeLogoLight;
+	});
 	themeIcon.textContent = theme === 'dark' ? '☀' : '☾';
 	themeToggle.setAttribute('aria-label', t(theme === 'dark' ? 'nav.themeLight' : 'nav.themeDark'));
 	themeToggle.title = t(theme === 'dark' ? 'nav.themeLight' : 'nav.themeDark');
@@ -388,9 +456,8 @@ function placeCards() {
 function renderDestinationCards() {
 	const filter = searchState.destination.trim().toLocaleLowerCase(localeInfo().intl);
 	fan.innerHTML = homes.map(([id, nameKey, price, destination]) => {
-		const localizedPrice = formatNumber(price, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 		const hidden = filter && !destination.toLocaleLowerCase(localeInfo().intl).includes(filter) ? ' hidden' : '';
-		return `<div class="card" data-destination="${destination.toLowerCase()}"${hidden}><img src="${imageUrl(id, 500)}" alt=""><h4>${t(nameKey)}</h4><span>${localizedPrice} / ${t('stays.night')} · ★ 4.6</span></div>`;
+		return `<div class="card" data-destination="${destination.toLowerCase()}"${hidden}><img src="${imageUrl(id, 500)}" alt=""><h4>${t(nameKey)}</h4><div class="currency-breakdown">${renderCurrencyAmounts(price)}</div><span> / ${t('stays.night')} · ★ 4.6</span></div>`;
 	}).join('');
 	cards = [...fan.children];
 	cards.forEach((card, index) => card.addEventListener('click', () => { current = index; placeCards(); }));
@@ -406,14 +473,107 @@ const featureKeys = [
 	['services.assistantTitle', 'services.assistantDescription', 'photo-1488646953014-85cb44e25828'],
 	['services.guideTitle', 'services.guideDescription', 'photo-1476514525535-07fb3b4ae5f1'],
 ];
-function renderFeatureRows() {
-	accordion.innerHTML = featureKeys.map(([titleKey, descriptionKey, image], index) => `<div class="row${index ? '' : ' open'}" tabindex="0" role="button"><span class="num">${formatNumber(index + 1)}</span><h3>${t(titleKey)}</h3><span class="dot">↗</span><div class="more"><img src="${imageUrl(image, 400)}" alt=""><p>${t(descriptionKey)}</p></div></div>`).join('');
-	[...accordion.children].forEach((row) => {
-		const openRow = () => [...accordion.children].forEach((item) => item.classList.toggle('open', item === row));
-		row.addEventListener('mouseenter', openRow);
-		row.addEventListener('click', openRow);
-		row.addEventListener('keydown', (event) => { if (event.key === 'Enter') openRow(); });
+const rideOptions = [
+	{ id: 'camaro-ss', brand: 'Chevrolet', model: 'Camaro SS', image: 'photo-1492144534655-ae79c964c9d7', seats: 4, bags: 2, rate: 22, idealKey: 'services.rideCity' },
+	{ id: 'porsche-911', brand: 'Porsche', model: '911 Carrera', image: 'photo-1503376780353-7e6692767b70', seats: 2, bags: 2, rate: 48, idealKey: 'services.rideAirport' },
+	{ id: 'camaro-zl1', brand: 'Chevrolet', model: 'Camaro ZL1', image: 'photo-1552519507-da3b142c6e3d', seats: 4, bags: 2, rate: 26, idealKey: 'services.rideCity' },
+	{ id: 'mustang-gt', brand: 'Ford', model: 'Mustang GT', image: 'photo-1494976388531-d1058494cdd8', seats: 4, bags: 2, rate: 32, idealKey: 'services.rideFamily' },
+	{ id: 'bmw-m4', brand: 'BMW', model: 'M4 Competition', image: 'photo-1511919884226-fd3cad34687c', seats: 4, bags: 2, rate: 38, idealKey: 'services.rideBusiness' },
+	{ id: 'range-rover', brand: 'Land Rover', model: 'Range Rover Sport', image: 'photo-1519641471654-76ce0107ad1b', seats: 5, bags: 4, rate: 45, idealKey: 'services.rideFamily' },
+	{ id: 'mercedes-amg', brand: 'Mercedes-Benz', model: 'AMG GT', image: 'photo-1544829099-b9a0c07fad1a', seats: 2, bags: 2, rate: 52, idealKey: 'services.rideBusiness' },
+	{ id: 'toyota-prado', brand: 'Toyota', model: 'Land Cruiser Prado', image: 'photo-1503736334956-4c8f8e92946d', seats: 7, bags: 5, rate: 36, idealKey: 'services.rideGroup' },
+	{ id: 'audi-r8', brand: 'Audi', model: 'R8 V10', image: 'photo-1549317661-bd32c8ce0db2', seats: 2, bags: 2, rate: 55, idealKey: 'services.rideBusiness' },
+	{ id: 'bmw-x5', brand: 'BMW', model: 'X5 xDrive', image: 'photo-1504215680853-026ed2a45def', seats: 5, bags: 4, rate: 42, idealKey: 'services.rideAirport' },
+];
+let selectedVehicleId = '';
+let vehicleOptionsExpanded = false;
+
+function renderVehicleCard(vehicle) {
+	const picked = selectedVehicleId === vehicle.id;
+	return `<article class="vehicle-card${picked ? ' is-picked' : ''}" role="group" aria-label="${vehicle.brand} ${vehicle.model}" style="--vehicle-image:url('${imageUrl(vehicle.image, 1200)}')"><div class="vehicle-card-preview"><span>${vehicle.brand}</span><h4>${vehicle.model}</h4></div><div class="vehicle-card-details"><span class="vehicle-brand">${vehicle.brand}</span><h4>${vehicle.model}</h4><p class="vehicle-specs">${formatNumber(vehicle.seats)} ${t('services.rideSeats')} · ${formatNumber(vehicle.bags)} ${t('services.rideBags')}</p><p class="vehicle-ideal"><span>${t('services.rideIdealFor')}</span><strong>${t(vehicle.idealKey)}</strong></p><p class="vehicle-hourly"><span>${t('services.rideHourlyLabel')}</span><strong>${formatMoney(vehicle.rate, localeInfo().currency)}</strong></p><button class="vehicle-pick" type="button" data-vehicle-pick="${vehicle.id}" aria-pressed="${picked}">${t(picked ? 'services.ridePicked' : 'services.ridePick')}</button></div></article>`;
+}
+
+function animateVehicleCards(container) {
+	if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+	container.querySelectorAll('.vehicle-card').forEach((card, index) => {
+		animate(card, {
+			opacity: [0, 1],
+			transform: ['translateY(18px) scale(.98)', 'translateY(0px) scale(1)'],
+		}, { duration: 0.55, delay: index * 0.07, ease: 'easeOut' });
 	});
+}
+
+function setupVehicleShowcase(row) {
+	const track = row.querySelector('[data-vehicle-track]');
+	const previous = row.querySelector('[data-vehicle-step="-1"]');
+	const next = row.querySelector('[data-vehicle-step="1"]');
+	const count = row.querySelector('[data-vehicle-count]');
+	const updateControls = () => {
+		const firstCard = track.querySelector('.vehicle-card');
+		const step = firstCard ? firstCard.getBoundingClientRect().width + parseFloat(getComputedStyle(track).gap) : track.clientWidth;
+		const index = step ? Math.round(track.scrollLeft / step) : 0;
+		previous.disabled = track.scrollLeft <= 1;
+		next.disabled = track.scrollLeft >= track.scrollWidth - track.clientWidth - 1;
+		count.textContent = `${formatNumber(Math.min(index + 1, 7))} / ${formatNumber(7)}`;
+	};
+	const scrollTrack = (direction) => {
+		const firstCard = track.querySelector('.vehicle-card');
+		if (!firstCard) return;
+		const step = firstCard.getBoundingClientRect().width + parseFloat(getComputedStyle(track).gap);
+		track.scrollBy({ left: direction * step, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+	};
+	previous.addEventListener('click', () => scrollTrack(-1));
+	next.addEventListener('click', () => scrollTrack(1));
+	track.addEventListener('scroll', () => requestAnimationFrame(updateControls), { passive: true });
+	updateControls();
+
+	const moreButton = row.querySelector('[data-vehicle-explore]');
+	const moreVehicles = row.querySelector('#vehicle-more');
+	moreButton.addEventListener('click', () => {
+		vehicleOptionsExpanded = !vehicleOptionsExpanded;
+		moreVehicles.hidden = !vehicleOptionsExpanded;
+		moreButton.setAttribute('aria-expanded', String(vehicleOptionsExpanded));
+		moreButton.textContent = t(vehicleOptionsExpanded ? 'services.rideShowLess' : 'services.rideExploreMore');
+		if (vehicleOptionsExpanded) animateVehicleCards(moreVehicles);
+	});
+
+	row.addEventListener('click', (event) => {
+		const pickButton = event.target.closest('[data-vehicle-pick]');
+		if (!pickButton) return;
+		selectedVehicleId = pickButton.dataset.vehiclePick;
+		const selectedVehicle = rideOptions.find((vehicle) => vehicle.id === selectedVehicleId);
+		row.querySelectorAll('[data-vehicle-pick]').forEach((button) => {
+			const picked = button.dataset.vehiclePick === selectedVehicleId;
+			button.setAttribute('aria-pressed', String(picked));
+			button.textContent = t(picked ? 'services.ridePicked' : 'services.ridePick');
+			button.closest('.vehicle-card').classList.toggle('is-picked', picked);
+		});
+		row.querySelector('[data-vehicle-selection]').textContent = t('services.rideSelected', { vehicle: `${selectedVehicle.brand} ${selectedVehicle.model}` });
+	});
+}
+
+function renderFeatureRows() {
+	accordion.innerHTML = featureKeys.map(([titleKey, descriptionKey, image], index) => {
+		const detail = index === 0
+			? `<div class="more vehicle-showcase"><div class="vehicle-showcase-heading"><p>${t(descriptionKey)}</p><div class="vehicle-carousel-controls"><output data-vehicle-count aria-live="polite">${formatNumber(1)} / ${formatNumber(7)}</output><button type="button" data-vehicle-step="-1" aria-label="${t('common.previous')}">‹</button><button type="button" data-vehicle-step="1" aria-label="${t('common.next')}">›</button></div></div><div class="vehicle-track" data-vehicle-track role="region" aria-label="${t(titleKey)}" tabindex="0">${rideOptions.slice(0, 7).map(renderVehicleCard).join('')}</div><button class="vehicle-explore" type="button" data-vehicle-explore aria-expanded="${vehicleOptionsExpanded}" aria-controls="vehicle-more">${t(vehicleOptionsExpanded ? 'services.rideShowLess' : 'services.rideExploreMore')}</button><div class="vehicle-more" id="vehicle-more"${vehicleOptionsExpanded ? '' : ' hidden'}>${rideOptions.slice(7).map(renderVehicleCard).join('')}</div><p class="sr-only" data-vehicle-selection aria-live="polite"></p></div>`
+			: `<div class="more"><img src="${imageUrl(image, 400)}" alt=""><p>${t(descriptionKey)}</p></div>`;
+		return `<div class="row${index ? '' : ' open ride-feature'}"><button class="row-trigger" type="button" aria-expanded="${index === 0}"><span class="num">${formatNumber(index + 1)}</span><h3>${t(titleKey)}</h3><span class="dot" aria-hidden="true">↗</span></button>${detail}</div>`;
+	}).join('');
+	[...accordion.children].forEach((row) => {
+		const trigger = row.querySelector('.row-trigger');
+		const openRow = () => {
+			[...accordion.children].forEach((item) => {
+				const isOpen = item === row;
+				item.classList.toggle('open', isOpen);
+				item.querySelector('.row-trigger').setAttribute('aria-expanded', String(isOpen));
+			});
+			if (row.classList.contains('ride-feature')) animateVehicleCards(row);
+		};
+		trigger.addEventListener('click', openRow);
+		if (row.classList.contains('ride-feature')) setupVehicleShowcase(row);
+	});
+	const openRideRow = accordion.querySelector('.ride-feature.open');
+	if (openRideRow) animateVehicleCards(openRideRow);
 }
 
 const people = {
@@ -441,7 +601,7 @@ function applyPeopleFilter(kind) {
 	const maxAge = Number(document.getElementById(`age-${kind}`).value);
 	const minRating = Number(document.getElementById(`rating-${kind}`).value);
 
-	document.getElementById(`price-value-${kind}`).textContent = `Up to $${maxPrice} / day`;
+	document.getElementById(`price-value-${kind}`).textContent = `Up to ${formatCurrencyBreakdown(maxPrice)} / day`;
 	document.getElementById(`age-value-${kind}`).textContent = `Up to ${maxAge}`;
 	document.getElementById(`rating-value-${kind}`).textContent = `${minRating.toFixed(1)}+`;
 
@@ -457,7 +617,7 @@ function renderPeopleCards() {
 	['a', 'g'].forEach((kind) => {
 		const grid = byId(`g${kind}`);
 		const roleKey = kind === 'a' ? 'people.assistantRole' : 'people.guideRole';
-		grid.innerHTML = people[kind].map((person) => `<article class="p" data-g="${person.gender}" data-price="${person.price}" data-age="${person.age}" data-rating="${person.rating}"><img src="${imageUrl(person.image, 500)}" alt=""><h4>${person.name}</h4><span>${t(roleKey)} · ★ ${person.rating.toFixed(1)}</span><div class="row2"><span style="margin:0">${t('people.fromDay')}</span><button class="btn">${t('people.book')} <i>↗</i></button></div></article>`).join('');
+		grid.innerHTML = people[kind].map((person) => `<article class="p" data-g="${person.gender}" data-price="${person.price}" data-age="${person.age}" data-rating="${person.rating}"><img src="${imageUrl(person.image, 500)}" alt=""><h4>${person.name}</h4><span>${t(roleKey)} · ★ ${person.rating.toFixed(1)}</span><div class="row2"><div class="person-price"><span class="price-label">${t('people.fromDay', { price: formatMoney(person.price, localeInfo().currency) })}</span><div class="currency-breakdown">${renderCurrencyAmounts(person.price, [localeInfo().currency])}</div></div><button class="btn">${t('people.book')} <i>↗</i></button></div></article>`).join('');
 		const toggle = query(`.tog[data-t=${kind}]`);
 		const activeValue = toggle.querySelector('[aria-pressed="true"]')?.dataset.v || 'all';
 		const filters = [['all', 'people.all'], ['f', 'people.female'], ['m', 'people.male']];
@@ -480,15 +640,15 @@ document.querySelectorAll('.tog').forEach((toggle) => toggle.addEventListener('c
 }));
 
 const paymentMethods = [
-	['payments.card', 'payments.cardDescription', 'CC'],
-	['payments.upi', 'payments.upiDescription', 'UPI'],
-	['payments.netBanking', 'payments.netBankingDescription', 'NB'],
-	['payments.wallets', 'payments.walletsDescription', 'W'],
-	['payments.arrival', 'payments.arrivalDescription', '$'],
+	['payments.card', 'payments.cardDescription', 'atmcard.png'],
+	['payments.bkash', 'payments.bkashDescription', 'bkash.png'],
+	['payments.googlePay', 'payments.googlePayDescription', 'gpay.png'],
+	['payments.applePay', 'payments.applePayDescription', 'applepay.png'],
+	['payments.arrival', 'payments.arrivalDescription', 'cash.png'],
 ];
 function renderPaymentOptions() {
 	const activeIndex = [...paymentList.children].findIndex((item) => item.getAttribute('aria-pressed') === 'true');
-	paymentList.innerHTML = paymentMethods.map(([nameKey, descriptionKey, icon], index) => `<button class="pm" aria-pressed="${index === (activeIndex < 0 ? 0 : activeIndex)}"><div class="ic">${icon}</div><b>${t(nameKey)}</b><span>${t(descriptionKey)}</span></button>`).join('');
+	paymentList.innerHTML = paymentMethods.map(([nameKey, descriptionKey, icon], index) => `<button class="pm" aria-pressed="${index === (activeIndex < 0 ? 0 : activeIndex)}"><div class="ic"><img src="/assets/icons/payment/${icon}" alt="" aria-hidden="true"></div><b>${t(nameKey)}</b><span>${t(descriptionKey)}</span></button>`).join('');
 }
 renderPaymentOptions();
 paymentList.addEventListener('click', (event) => {
@@ -553,3 +713,4 @@ applyTranslations();
 renderDestinationCards();
 renderFeatureRows();
 renderPeopleCards();
+loadCurrencyRates();

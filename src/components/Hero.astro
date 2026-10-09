@@ -1,6 +1,6 @@
 <div class="site-header" id="site-header">
 	<div class="primary-nav">
-		<a class="brand" href="#top" aria-label="GuesthouseBD home"><img src="/assets/logo/logo.png" alt="GuesthouseBD" /></a>
+		<a class="brand" href="#top" aria-label="GuesthouseBD home"><img src="/assets/logo/logo.png" data-theme-logo-light="/assets/logo/logo.png" data-theme-logo-dark="/assets/logo/logo-darkmode.png" alt="GuesthouseBD" /></a>
 		<nav class="category-tabs" aria-label="Explore categories" data-i18n-aria-label="nav.explore">
 			<a class="category-tab is-active" data-section="top" href="#top" aria-current="page"><span class="category-icon">🌍</span><span data-i18n="nav.all">All</span></a>
 			<a class="category-tab" data-section="stays" href="#stays"><span class="category-icon">⌂</span><span data-i18n="nav.stays">Stays</span></a>
@@ -13,7 +13,7 @@
 			<button type="button" data-search-open="dates"><span class="compact-value" data-summary="dates">Add dates</span></button>
 			<span class="compact-divider" aria-hidden="true"></span>
 			<button type="button" data-search-open="guests"><span class="compact-value" data-summary="guests">Add guests</span></button>
-			<button class="compact-submit" id="compact-submit" type="button" data-submit-search aria-label="Search stays">⌕</button>
+			<button class="compact-submit" id="compact-submit" type="button" data-submit-search aria-label="Search stays"><svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.3"></circle><path d="m15.5 15.5 4.2 4.2"></path></svg></button>
 		</div>
 		<div class="nav-actions">
 			<div class="language-picker" id="language-picker">
@@ -56,7 +56,7 @@
 			<button class="search-segment" type="button" data-search-open="guests" aria-expanded="false">
 				<span class="segment-title" data-i18n="search.who">Who?</span><span class="segment-value" data-summary="guests">Add guests</span>
 			</button>
-			<button class="search-submit" type="submit"><span aria-hidden="true">⌕</span><span data-i18n="search.search">Search</span></button>
+			<button class="search-submit" type="submit" aria-label="Search stays" data-i18n-aria-label="search.searchStays"><svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.3"></circle><path d="m15.5 15.5 4.2 4.2"></path></svg><span data-i18n="search.search">Search</span></button>
 		</form>
 	</div>
 	<div class="search-popover" id="search-popover" role="dialog" aria-label="Search stays" data-i18n-aria-label="search.searchStays" hidden>
