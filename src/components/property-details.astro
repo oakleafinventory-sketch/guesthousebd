@@ -1,5 +1,6 @@
 ---
 import { getPropertyDetails, type PropertyListing } from '../data/property-details';
+import { languages } from '../i18n/locales.js';
 
 interface Props {
 	property: PropertyListing;
@@ -21,19 +22,25 @@ const stayFacts = [
 const formatMoney = (amount: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(amount);
 ---
 
-		<div class="property-page" data-property-rate={property.pricePerNight} data-property-original-rate={property.originalPricePerNight} data-default-nights={property.defaultNights} data-default-guests={property.defaultGuests} data-max-guests={property.maxGuests}>
+		<div class="property-page" data-property-rate={property.pricePerNight} data-property-original-rate={property.originalPricePerNight} data-default-nights={property.defaultNights} data-default-guests={property.defaultGuests} data-max-guests={property.maxGuests} data-guest-capacity={details.guestCapacity || ''} data-bedrooms={details.bedrooms || ''} data-bathrooms={details.bathrooms || ''} data-current-name={property.name}>
 			<header class="property-header">
 				<div class="property-header-inner">
 					<a class="property-brand" href="/" aria-label="GuesthouseBD home"><img src="/assets/logo/logo.png" alt="GuesthouseBD" /></a>
-					<div class="property-search" role="group" aria-label="Stay search">
-						<button type="button" class="property-search-item" data-focus-location><span>Location</span><strong>{details.location.area}</strong></button>
-						<button type="button" class="property-search-item" data-focus-checkin><span>Dates</span><strong data-header-dates>Add dates</strong></button>
-						<button type="button" class="property-search-item property-search-guests" data-focus-guests><span>Guests</span><strong data-header-guests>{property.defaultGuests} guest</strong></button>
-						<button type="button" class="property-search-submit" data-jump-booking aria-label="Go to reservation details"><span aria-hidden="true">⌕</span></button>
+					<div class="property-search" role="group" aria-label="Stay search" data-property-aria="property.staySearch">
+						<button type="button" class="property-search-item" data-focus-location><span data-property-i18n="property.location">Location</span><strong>{details.location.area}</strong></button>
+						<button type="button" class="property-search-item" data-focus-checkin><span data-property-i18n="property.dates">Dates</span><strong data-header-dates data-property-i18n="property.addDates">Add dates</strong></button>
+						<button type="button" class="property-search-item property-search-guests" data-focus-guests><span data-property-i18n="property.guests">Guests</span><strong data-header-guests>{property.defaultGuests} guest</strong></button>
+						<button type="button" class="property-search-submit" data-jump-booking aria-label="Go to reservation details" data-property-aria="property.openReservation"><span aria-hidden="true">⌕</span></button>
 					</div>
 					<div class="header-actions">
-						<button class="quiet-action" type="button" data-share aria-label="Share this stay"><span aria-hidden="true">↗</span><span>Share</span></button>
-						<button class="quiet-action save-action" type="button" data-save aria-label="Save this stay" aria-pressed="false"><span class="save-heart" aria-hidden="true">♡</span><span data-save-label>Save</span></button>
+						<label class="property-language">
+							<span class="sr-only" data-property-i18n="property.language">Choose language</span>
+							<select data-property-language aria-label="Choose language" data-property-aria="property.language">
+								{languages.map(({ code, label }) => <option value={code}>{label}</option>)}
+							</select>
+						</label>
+						<button class="quiet-action" type="button" data-share aria-label="Share this stay" data-property-aria="property.shareStay"><span aria-hidden="true">↗</span><span data-property-i18n="property.share">Share</span></button>
+						<button class="quiet-action save-action" type="button" data-save aria-label="Save this stay" data-property-aria="property.saveStay" aria-pressed="false"><span class="save-heart" aria-hidden="true">♡</span><span data-save-label data-property-i18n="property.save">Save</span></button>
 					</div>
 				</div>
 			</header>
@@ -43,24 +50,24 @@ const formatMoney = (amount: number) => new Intl.NumberFormat('en-US', { style: 
 					<div class="heading-copy">
 						<p class="eyebrow">{details.location.area.toUpperCase()} · {property.city.toUpperCase()}</p>
 						<h1>{property.name}</h1>
-						<div class="property-rating"><span class="rating-star" aria-hidden="true">★</span><strong>{property.rating}</strong><a href="#reviews">{property.reviewCount} reviews</a><span class="rating-dot" aria-hidden="true">·</span><span>{property.city}, {details.location.country}</span></div>
+						<div class="property-rating"><span class="rating-star" aria-hidden="true">★</span><strong>{property.rating}</strong><a href="#reviews"><span data-review-count={property.reviewCount}>{property.reviewCount} reviews</span></a><span class="rating-dot" aria-hidden="true">·</span><span>{property.city}, {details.location.country}</span></div>
 					</div>
-					<button class="photos-button" type="button" data-open-gallery data-gallery-index="0"><span aria-hidden="true">▦</span> View all photos</button>
+					<button class="photos-button" type="button" data-open-gallery data-gallery-index="0"><span aria-hidden="true">▦</span><span data-property-i18n="property.viewPhotos">View all photos</span></button>
 				</div>
 
-				<section id="photos" class={`photo-gallery${gallery.length === 1 ? ' photo-gallery-single' : ''}`} aria-label={`Photos of ${property.cardName}`}>
+				<section id="photos" class={`photo-gallery${gallery.length === 1 ? ' photo-gallery-single' : ''}`} aria-label={`Photos of ${property.cardName}`} data-property-aria="property.photosOf" data-property-name={property.cardName}>
 					{gallery.map((photo, index) => (
-						<button class={`photo-tile${index === 0 ? ' photo-tile-primary' : ''}`} type="button" data-open-gallery data-gallery-index={index} aria-label={`Open photo ${index + 1} of ${gallery.length}: ${photo.alt}`}>
+						<button class={`photo-tile${index === 0 ? ' photo-tile-primary' : ''}`} type="button" data-open-gallery data-gallery-index={index} aria-label={`Show photo ${index + 1}: ${photo.alt}`} data-property-aria="property.showPhoto" data-property-count={index + 1} data-property-alt={photo.alt}>
 							<img src={`https://images.unsplash.com/${photo.image}?auto=format&fit=crop&w=${index === 0 ? 1400 : 700}&q=85`} alt={photo.alt} loading={index === 0 ? 'eager' : 'lazy'} />
 						</button>
 					))}
 					<span class="photo-count" aria-hidden="true">01 <span>/</span> {String(gallery.length).padStart(2, '0')}</span>
 				</section>
 				<nav class="property-section-nav" aria-label="Property sections">
-					<a href="#photos">Photos</a>
-					{amenities.length > 0 && <a href="#amenities">Amenities</a>}
-					<a href="#reviews">Reviews</a>
-					<a href="#location">Location</a>
+					<a href="#photos" data-property-i18n="property.photos">Photos</a>
+					{amenities.length > 0 && <a href="#amenities" data-property-i18n="property.amenities">Amenities</a>}
+					<a href="#reviews" data-property-i18n="property.reviews">Reviews</a>
+					<a href="#location" data-property-i18n="property.locationSection">Location</a>
 				</nav>
 
 				<div class="property-layout">
@@ -68,97 +75,97 @@ const formatMoney = (amount: number) => new Intl.NumberFormat('en-US', { style: 
 						<section id="overview" class="overview-section content-section" data-reveal>
 							<div class="overview-top">
 								<div>
-									<p class="eyebrow">THE STAY</p>
+									<p class="eyebrow" data-property-i18n="property.stay">THE STAY</p>
 									<h2>{details.propertyType} in {property.city}, {details.location.country}</h2>
-									<p class="stay-facts">{stayFacts || 'Ask the host for sleeping arrangements'}</p>
+										<p class="stay-facts" data-stay-facts>{stayFacts || 'Ask the host for sleeping arrangements'}</p>
 								</div>
 								<div class="host-mark" aria-label={`Hosted by ${details.host.name}`}><span>{details.host.initials}</span><small>{details.host.role.toUpperCase()}</small></div>
 							</div>
 							<div class="detail-rule"></div>
 							<ul class="comfort-list" aria-label="Stay highlights">
-								{(details.bedrooms || details.guestCapacity) && <li><span class="comfort-icon" aria-hidden="true">⌂</span><span><strong>Space to spread out</strong><small>{details.bedrooms ? `${details.bedrooms} bedrooms` : `${details.guestCapacity} guest capacity`}{details.guestCapacity ? ` · room for ${details.guestCapacity}` : ''}</small></span></li>}
-								<li><span class="comfort-icon" aria-hidden="true">✦</span><span><strong>{property.details ? 'Guest favorite' : 'Guest rating'}</strong><small>Rated {property.rating} by {property.reviewCount} guests</small></span></li>
-								<li><span class="comfort-icon" aria-hidden="true">⌖</span><span><strong>In {details.location.area}</strong><small>Close to everyday city essentials</small></span></li>
+								{(details.bedrooms || details.guestCapacity) && <li><span class="comfort-icon" aria-hidden="true">⌂</span><span><strong data-property-i18n="property.spaceToSpread">Space to spread out</strong><small data-stay-room-summary>{details.bedrooms ? `${details.bedrooms} bedrooms` : `${details.guestCapacity} guest capacity`}{details.guestCapacity ? ` · room for ${details.guestCapacity}` : ''}</small></span></li>}
+								<li><span class="comfort-icon" aria-hidden="true">✦</span><span><strong data-property-i18n={property.details ? 'property.guestFavorite' : 'property.guestRating'}>{property.details ? 'Guest favorite' : 'Guest rating'}</strong><small data-rating-summary data-rating={property.rating} data-review-count={property.reviewCount}>Rated {property.rating} by {property.reviewCount} guests</small></span></li>
+								<li><span class="comfort-icon" aria-hidden="true">⌖</span><span><strong>In {details.location.area}</strong><small data-property-i18n="property.everydayEssentials">Close to everyday city essentials</small></span></li>
 							</ul>
 							<div class="detail-rule"></div>
 						</section>
 
 						<section class="content-section description-section" data-reveal>
-							<p class="eyebrow">PROPERTY DETAILS</p>
+							<p class="eyebrow" data-property-i18n="property.details">PROPERTY DETAILS</p>
 							<h2>{details.descriptionTitle}</h2>
 							<p class="description-copy">{details.description}</p>
 							<p class="description-copy description-extra" data-description-extra hidden>{details.descriptionExtra}</p>
-							<button class="text-button" type="button" data-description-toggle aria-expanded="false">Read more <span aria-hidden="true">↓</span></button>
+							<button class="text-button" type="button" data-description-toggle aria-expanded="false"><span data-description-label data-property-i18n="property.readMore">Read more</span><span aria-hidden="true">↓</span></button>
 						</section>
 
 						{amenities.length > 0 && <section id="amenities" class="content-section amenities-section" data-reveal>
-							<div class="section-title-row"><div><p class="eyebrow">THOUGHTFUL DETAILS</p><h2>What this place offers</h2></div><span class="section-index">01 — {String(amenities.length).padStart(2, '0')}</span></div>
+							<div class="section-title-row"><div><p class="eyebrow" data-property-i18n="property.thoughtfulDetails">THOUGHTFUL DETAILS</p><h2 data-property-i18n="property.offers">What this place offers</h2></div><span class="section-index">01 — {String(amenities.length).padStart(2, '0')}</span></div>
 							<ul class="amenity-preview">
 								{amenities.slice(0, 6).map((amenity) => <li><span class="amenity-icon" aria-hidden="true">{amenity.icon}</span><span>{amenity.name}</span></li>)}
 							</ul>
-							<button class="outline-button" type="button" data-open-amenities>See all {amenities.length} amenities <span aria-hidden="true">↗</span></button>
+							<button class="outline-button" type="button" data-open-amenities><span data-property-i18n="property.seeAmenities" data-property-count={amenities.length}>See all {amenities.length} amenities</span><span aria-hidden="true">↗</span></button>
 						</section>}
 
 						<section id="reviews" class="content-section reviews-section" data-reveal>
-							<div class="review-heading"><p class="eyebrow">GUEST NOTES</p><h2><span aria-hidden="true">★</span> {property.rating} <small>· {property.reviewCount} reviews</small></h2><p>Consistently loved for its comfort, location and easy arrivals.</p></div>
+							<div class="review-heading"><p class="eyebrow" data-property-i18n="property.guestNotes">GUEST NOTES</p><h2><span aria-hidden="true">★</span> {property.rating} <small>· {property.reviewCount} reviews</small></h2><p data-property-i18n="property.reviewSummary">Consistently loved for its comfort, location and easy arrivals.</p></div>
 							<div class="review-highlights">
 								{reviewHighlights.map((highlight, index) => <div class="review-highlight"><span class="review-mark" aria-hidden="true">{index === 0 ? '✦' : index === 1 ? '⌂' : '↗'}</span><strong>{highlight.title}</strong><span class="review-score">{highlight.score}</span><small>{highlight.detail}</small></div>)}
 							</div>
-							<p class="review-disclaimer">Guest comments will appear here when review data is connected.</p>
+							<p class="review-disclaimer" data-property-i18n="property.guestComments">Guest comments will appear here when review data is connected.</p>
 						</section>
 
 						<section id="location" class="content-section location-section" data-reveal>
-							<div class="section-title-row"><div><p class="eyebrow">FIND YOUR WAY</p><h2>In {details.location.area}, {property.city}</h2></div><span class="map-label"><span aria-hidden="true">⌖</span> {property.city.toUpperCase()}</span></div>
+							<div class="section-title-row"><div><p class="eyebrow" data-property-i18n="property.findWay">FIND YOUR WAY</p><h2><span data-property-i18n="property.inArea" data-property-area={details.location.area} data-property-city={property.city}>In {details.location.area}, {property.city}</span></h2></div><span class="map-label"><span aria-hidden="true">⌖</span> {property.city.toUpperCase()}</span></div>
 							<div class="location-visual"><img src={details.location.image} alt={`View near ${details.location.area}, ${property.city}`} loading="lazy" /><div class="location-pin"><span aria-hidden="true">⌖</span><strong>{details.location.area}</strong><small>{property.city}, {details.location.country}</small></div><p>{details.location.addressNote}</p></div>
 							<p class="location-copy">{details.location.description}</p>
 						</section>
 
 						<section class="host-section content-section" data-reveal>
 							<div class="host-avatar">{details.host.initials}</div>
-							<div><p class="eyebrow">YOUR LOCAL CONTACT</p><h2>Hosted by {details.host.name}</h2><p>{details.host.description}</p></div>
+							<div><p class="eyebrow" data-property-i18n="property.localContact">YOUR LOCAL CONTACT</p><h2 data-property-i18n="property.hostedBy" data-property-name={details.host.name}>Hosted by {details.host.name}</h2><p>{details.host.description}</p></div>
 						</section>
 					</div>
 
 					<aside class="booking-column" aria-label={`Reserve ${property.cardName}`}>
 						<div class="reservation-card">
-							<div class="booking-price-row"><div><strong data-price-total>{formatMoney(totalPrice)}</strong><del data-price-original>{formatMoney(originalPrice)}</del><span data-price-nights>for {property.defaultNights} nights</span></div><span class="price-tag"><span aria-hidden="true">↓</span> Better price</span></div>
+							<div class="booking-price-row"><div><strong data-price-total>{formatMoney(totalPrice)}</strong><del data-price-original>{formatMoney(originalPrice)}</del><span data-price-nights>for {property.defaultNights} nights</span></div><span class="price-tag"><span aria-hidden="true">↓</span><span data-property-i18n="property.betterPrice">Better price</span></span></div>
 							<div class="booking-controls">
-								<label class="date-field"><span>CHECK-IN</span><input id="check-in" type="date" /></label>
-								<label class="date-field"><span>CHECKOUT</span><input id="check-out" type="date" /></label>
-								<div class="guest-field"><div><span>GUESTS</span><output id="guest-count" aria-live="polite">{property.defaultGuests} guest</output></div><div class="guest-stepper"><button type="button" data-guest-step="-1" aria-label="Remove a guest">−</button><output id="guest-number">{property.defaultGuests}</output><button type="button" data-guest-step="1" aria-label="Add a guest">+</button></div></div>
+								<label class="date-field"><span data-property-i18n="property.checkIn">CHECK-IN</span><input id="check-in" type="date" /></label>
+								<label class="date-field"><span data-property-i18n="property.checkout">CHECKOUT</span><input id="check-out" type="date" /></label>
+								<div class="guest-field"><div><span data-property-i18n="property.guests">GUESTS</span><output id="guest-count" aria-live="polite">{property.defaultGuests} guest</output></div><div class="guest-stepper"><button type="button" data-guest-step="-1" aria-label="Remove a guest" data-property-aria="property.removeGuest">−</button><output id="guest-number">{property.defaultGuests}</output><button type="button" data-guest-step="1" aria-label="Add a guest" data-property-aria="property.addGuest">+</button></div></div>
 							</div>
-							<p class="date-error" id="date-error" role="alert" hidden>Choose a checkout after your check-in.</p>
-							<button class="reserve-button" type="button" data-reserve>Reserve <span aria-hidden="true">→</span></button>
-							<p class="reserve-note">You won't be charged yet</p>
-							<div class="price-breakdown"><div><span><span data-nightly-price>{formatMoney(property.originalPricePerNight)}</span> × <span data-night-count>{property.defaultNights}</span> nights</span><span data-subtotal>{formatMoney(originalPrice)}</span></div><div><span>Stay discount</span><span class="discount-value" data-discount>−{formatMoney(discount)}</span></div><div class="total-line"><strong>Total before taxes</strong><strong data-price-total>{formatMoney(totalPrice)}</strong></div></div>
-							<button class="fee-note" type="button" data-fee-note><span aria-hidden="true">ⓘ</span> Price includes all fees</button>
+							<p class="date-error" id="date-error" role="alert" hidden data-property-i18n="property.invalidDates">Choose a checkout after your check-in.</p>
+							<button class="reserve-button" type="button" data-reserve><span data-property-i18n="property.reserve">Reserve</span><span aria-hidden="true">→</span></button>
+							<p class="reserve-note" data-property-i18n="property.notCharged">You won't be charged yet</p>
+							<div class="price-breakdown"><div><span><span data-nightly-price>{formatMoney(property.originalPricePerNight)}</span> × <span data-night-count>{property.defaultNights}</span> <span data-night-unit>nights</span></span><span data-subtotal>{formatMoney(originalPrice)}</span></div><div><span data-property-i18n="property.stayDiscount">Stay discount</span><span class="discount-value" data-discount>−{formatMoney(discount)}</span></div><div class="total-line"><strong data-property-i18n="property.totalBeforeTaxes">Total before taxes</strong><strong data-price-total>{formatMoney(totalPrice)}</strong></div></div>
+							<button class="fee-note" type="button" data-fee-note><span aria-hidden="true">ⓘ</span><span data-property-i18n="property.feesIncluded">Price includes all fees</span></button>
 						</div>
-						<p class="booking-assurance"><span aria-hidden="true">◈</span> Free cancellation for 24 hours</p>
+						<p class="booking-assurance"><span aria-hidden="true">◈</span><span data-property-i18n="property.freeCancellation">Free cancellation for 24 hours</span></p>
 					</aside>
 				</div>
 			</main>
 
-			<footer class="property-footer"><a href="/guestHouses/dhaka/">← Back to {property.city} stays</a><span>GuesthouseBD · Find your place in the city</span></footer>
-			<div class="mobile-reserve-bar"><div><strong data-price-total>{formatMoney(totalPrice)}</strong><span data-price-nights>for {property.defaultNights} nights</span></div><button type="button" data-reserve>Reserve</button></div>
+			<footer class="property-footer"><a href="/guestHouses/dhaka/" data-property-i18n="property.backToStays" data-property-city={property.city}>← Back to {property.city} stays</a><span>GuesthouseBD · Find your place in the city</span></footer>
+			<div class="mobile-reserve-bar"><div><strong data-price-total>{formatMoney(totalPrice)}</strong><span data-price-nights>for {property.defaultNights} nights</span></div><button type="button" data-reserve><span data-property-i18n="property.reserve">Reserve</span></button></div>
 			<div class="toast-message" id="toast-message" role="status" aria-live="polite"></div>
 		</div>
 
-		<dialog class="gallery-dialog" id="gallery-dialog" aria-label="Photo gallery">
-			<div class="dialog-top"><p><strong id="gallery-count">01 / {String(gallery.length).padStart(2, '0')}</strong><span>Photos of {property.cardName}</span></p><button type="button" class="icon-button" data-close-gallery aria-label="Close gallery">×</button></div>
-			<div class="gallery-stage"><button class="gallery-arrow" type="button" data-gallery-prev aria-label="Previous photo">‹</button><figure><img id="gallery-image" src={`https://images.unsplash.com/${gallery[0].image}?auto=format&fit=crop&w=1600&q=90`} alt={gallery[0].alt} /><figcaption id="gallery-caption">{gallery[0].alt}</figcaption></figure><button class="gallery-arrow" type="button" data-gallery-next aria-label="Next photo">›</button></div>
+		<dialog class="gallery-dialog" id="gallery-dialog" aria-label="Photo gallery" data-property-aria="property.photoGallery">
+			<div class="dialog-top"><p><strong id="gallery-count">01 / {String(gallery.length).padStart(2, '0')}</strong><span data-property-i18n="property.photosOf" data-property-name={property.cardName}>Photos of {property.cardName}</span></p><button type="button" class="icon-button" data-close-gallery aria-label="Close gallery" data-property-aria="property.close">×</button></div>
+			<div class="gallery-stage"><button class="gallery-arrow" type="button" data-gallery-prev aria-label="Previous photo" data-property-aria="property.previousPhoto">‹</button><figure><img id="gallery-image" src={`https://images.unsplash.com/${gallery[0].image}?auto=format&fit=crop&w=1600&q=90`} alt={gallery[0].alt} /><figcaption id="gallery-caption">{gallery[0].alt}</figcaption></figure><button class="gallery-arrow" type="button" data-gallery-next aria-label="Next photo" data-property-aria="property.nextPhoto">›</button></div>
 			<div class="gallery-thumbnails" aria-label="Choose a photo">
-				{gallery.map((photo, index) => <button type="button" data-gallery-select={index} aria-label={`Show photo ${index + 1}: ${photo.alt}`} aria-current={index === 0 ? 'true' : 'false'}><img src={`https://images.unsplash.com/${photo.image}?auto=format&fit=crop&w=180&q=70`} alt="" loading="lazy" /></button>)}
+				{gallery.map((photo, index) => <button type="button" data-gallery-select={index} aria-label={`Show photo ${index + 1}: ${photo.alt}`} data-property-aria="property.showPhoto" data-property-count={index + 1} data-property-alt={photo.alt} aria-current={index === 0 ? 'true' : 'false'}><img src={`https://images.unsplash.com/${photo.image}?auto=format&fit=crop&w=180&q=70`} alt="" loading="lazy" /></button>)}
 			</div>
 		</dialog>
 
 		{amenities.length > 0 && <dialog class="amenities-dialog" id="amenities-dialog" aria-labelledby="amenities-dialog-title">
-			<div class="dialog-top"><p><strong id="amenities-dialog-title">All {amenities.length} amenities</strong><span>Comforts for your stay</span></p><button type="button" class="icon-button" data-close-amenities aria-label="Close amenities">×</button></div>
+			<div class="dialog-top"><p><strong id="amenities-dialog-title" data-property-i18n="property.allAmenities" data-property-count={amenities.length}>All {amenities.length} amenities</strong><span data-property-i18n="property.amenityComforts">Comforts for your stay</span></p><button type="button" class="icon-button" data-close-amenities aria-label="Close amenities" data-property-aria="property.close">×</button></div>
 			<ul class="all-amenities">{amenities.map((amenity) => <li><span class="amenity-icon" aria-hidden="true">{amenity.icon}</span><span><strong>{amenity.name}</strong><small>{amenity.detail}</small></span></li>)}</ul>
 		</dialog>}
 
 		<dialog class="reserve-dialog" id="reserve-dialog" aria-labelledby="reserve-dialog-title">
-			<div class="dialog-top"><p><strong>YOUR STAY</strong><span>Reservation details</span></p><button type="button" class="icon-button" data-close-reservation aria-label="Close reservation details">×</button></div>
-			<div class="reserve-confirmation"><span class="confirmation-mark" aria-hidden="true">✓</span><p class="eyebrow">READY WHEN YOU ARE</p><h2 id="reserve-dialog-title">Review your stay</h2><p class="confirm-dates" data-confirm-dates></p><p class="confirm-guests" data-confirm-guests></p><div class="confirm-total"><span>Estimated total</span><strong data-confirm-total></strong></div><p class="demo-disclaimer">This preview doesn't submit a booking or charge a payment method.</p><button type="button" class="reserve-button" data-close-reservation>Back to the stay</button></div>
+			<div class="dialog-top"><p><strong data-property-i18n="property.yourStay">YOUR STAY</strong><span data-property-i18n="property.reservationDetails">Reservation details</span></p><button type="button" class="icon-button" data-close-reservation aria-label="Close reservation details" data-property-aria="property.close">×</button></div>
+			<div class="reserve-confirmation"><span class="confirmation-mark" aria-hidden="true">✓</span><p class="eyebrow" data-property-i18n="property.readyWhen">READY WHEN YOU ARE</p><h2 id="reserve-dialog-title" data-property-i18n="property.reviewStay">Review your stay</h2><p class="confirm-dates" data-confirm-dates></p><p class="confirm-guests" data-confirm-guests></p><div class="confirm-total"><span data-property-i18n="property.estimatedTotal">Estimated total</span><strong data-confirm-total></strong></div><p class="demo-disclaimer" data-property-i18n="property.reservationDisclaimer">This preview doesn't submit a booking or charge a payment method.</p><button type="button" class="reserve-button" data-close-reservation data-property-i18n="property.backToStay">Back to the stay</button></div>
 		</dialog>
 		<script src="../scripts/property.ts"></script>
 		<style>
@@ -166,7 +173,7 @@ const formatMoney = (amount: number) => new Intl.NumberFormat('en-US', { style: 
 			:global(html){scroll-padding-top:140px}
 			.property-page{--property-ink:#20201e;--property-muted:#706f69;--property-line:#e8e7e1;--property-paper:#fff;--property-soft:#f5f5ef;--property-accent:#e6183d;--property-header-height:72px;min-height:100vh;padding-bottom:40px;background:var(--property-paper);color:var(--property-ink)}
 			.property-header{position:sticky;top:0;z-index:20;border-bottom:1px solid var(--property-line);background:#fffffff2;backdrop-filter:blur(14px)}
-			.property-header-inner{display:grid;grid-template-columns:142px minmax(280px,440px) 142px;align-items:center;justify-content:space-between;gap:24px;width:min(1280px,calc(100% - 48px));height:72px;margin:0 auto}
+			.property-header-inner{display:grid;grid-template-columns:142px minmax(280px,440px) minmax(220px,auto);align-items:center;justify-content:space-between;gap:24px;width:min(1280px,calc(100% - 48px));height:72px;margin:0 auto}
 			.property-brand{display:block;flex:0 0 142px;width:142px;line-height:0}
 			.property-brand img{width:100%;height:auto;object-fit:contain;background:transparent}
 			.property-search{display:flex;align-items:center;justify-self:center;width:min(440px,100%);min-width:0;height:48px;padding:4px;border:1px solid var(--property-line);border-radius:999px;background:#fff;box-shadow:0 3px 12px #20201e12}
@@ -181,6 +188,8 @@ const formatMoney = (amount: number) => new Intl.NumberFormat('en-US', { style: 
 			.property-section-nav a{display:grid;align-content:center;min-height:58px;border-bottom:2px solid transparent;color:var(--property-muted);font-size:13px;font-weight:600;transition:color .2s,border-color .2s}
 			.property-section-nav a:hover,.property-section-nav a[aria-current=location]{border-color:var(--property-accent);color:var(--property-ink)}
 			.header-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px}
+			.property-language{display:block;min-width:0}
+			.property-language select{max-width:108px;height:34px;padding:0 9px;border:1px solid var(--property-line);border-radius:999px;background:#fff;color:var(--property-ink);font:inherit;font-size:12px;cursor:pointer}
 			.quiet-action{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border:0;border-radius:999px;background:transparent;color:var(--property-ink);font:inherit;font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer;transition:background .2s,transform .2s}
 			.quiet-action:hover{background:var(--property-soft)}
 			.quiet-action>span:first-child{font-size:18px;line-height:1}
@@ -351,6 +360,6 @@ const formatMoney = (amount: number) => new Intl.NumberFormat('en-US', { style: 
 			@media(max-width:440px){.property-heading{display:block}.photos-button{margin-top:12px}.property-heading h1{font-size:23px}.property-rating{font-size:11px}.amenity-preview{grid-template-columns:1fr;gap:13px}.review-highlights{grid-template-columns:1fr}.review-highlight{border-right:0;border-bottom:1px solid var(--property-line)}.review-highlight:last-child{border-bottom:0}.location-visual{height:220px}.host-section h2{font-size:15px}.property-footer{align-items:flex-start;flex-direction:column}.property-footer span{max-width:none;text-align:left}}
 			@media(prefers-reduced-motion:reduce){.photo-tile img,.photos-button,.outline-button,.reserve-button,.toast-message,.property-search-submit,.property-search-item,.property-section-nav,.property-section-nav a{transition:none!important}}
 			@media(max-width:700px){.booking-column .reservation-card{display:none}.reservation-card{padding:18px}}
-			@media(max-width:900px){.property-header-inner{grid-template-columns:122px minmax(260px,1fr) 132px;gap:12px}.property-search{height:44px}.property-search-item{padding:0 9px}}
-			@media(max-width:700px){.property-page{--property-header-height:112px}.property-header-inner{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"brand actions" "search search";height:auto;min-height:112px;padding:8px 0;gap:8px 10px}.property-brand{grid-area:brand;flex-basis:122px;width:122px}.header-actions{grid-area:actions}.property-search{grid-area:search;justify-self:stretch;width:100%;height:44px}.property-search-item{padding:0 8px}.property-search-item>span{font-size:8px}.property-search-item strong{font-size:11px}.property-search-submit{flex-basis:34px;width:34px;height:34px;font-size:21px}.property-section-nav{gap:22px;min-height:50px;margin:0 calc((100% - 100vw)/2);padding:0 16px;overflow-x:auto}.property-section-nav a{min-height:50px;font-size:12px}}
+			@media(max-width:900px){.property-header-inner{grid-template-columns:122px minmax(260px,1fr) minmax(220px,auto);gap:12px}.property-search{height:44px}.property-search-item{padding:0 9px}}
+			@media(max-width:700px){.property-page{--property-header-height:112px}.property-header-inner{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"brand actions" "search search";height:auto;min-height:112px;padding:8px 0;gap:8px 10px}.property-brand{grid-area:brand;flex-basis:122px;width:122px}.header-actions{grid-area:actions;gap:4px}.property-language select{width:76px;max-width:76px;padding:0 5px;font-size:10px}.quiet-action{width:32px;height:32px;padding:0;justify-content:center}.quiet-action>span:last-child{display:none}.property-search{grid-area:search;justify-self:stretch;width:100%;height:44px}.property-search-item{padding:0 8px}.property-search-item>span{font-size:8px}.property-search-item strong{font-size:11px}.property-search-submit{flex-basis:34px;width:34px;height:34px;font-size:21px}.property-section-nav{gap:22px;min-height:50px;margin:0 calc((100% - 100vw)/2);padding:0 16px;overflow-x:auto}.property-section-nav a{min-height:50px;font-size:12px}}
 		</style>
