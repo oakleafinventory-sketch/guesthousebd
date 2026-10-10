@@ -1,0 +1,94 @@
+---
+import '../../../styles/global.css';
+import { getPropertyPath, properties } from '../../../data/property-details';
+
+const stays = properties.filter((property) => property.city === 'Dhaka');
+const formatMoney = (amount: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Guesthouses in Dhaka — GuesthouseBD</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap" rel="stylesheet" />
+	</head>
+	<body>
+		<div class="dhaka-page">
+			<header class="listing-header">
+				<a class="listing-brand" href="/" aria-label="GuesthouseBD home"><img src="/assets/logo/logo.png" alt="GuesthouseBD" /></a>
+				<a class="back-link" href="/">Back to explore <span aria-hidden="true">↗</span></a>
+			</header>
+			<main>
+				<section class="results-heading" aria-labelledby="results-title">
+					<div>
+						<p class="results-location">Dhaka <span aria-hidden="true">/</span> Bangladesh</p>
+						<h1 id="results-title">Based on your Dhaka search</h1>
+						<p class="results-summary">6 guesthouses <span aria-hidden="true">·</span> 4 nights <span aria-hidden="true">·</span> 1 guest</p>
+					</div>
+					<a class="search-again" href="/#site-header" aria-label="Change your search">Change search <span aria-hidden="true">↗</span></a>
+				</section>
+				<section class="stay-grid" aria-label="Guesthouses in Dhaka">
+					{stays.map((stay) => (
+						<article class="stay-card">
+							<div class="stay-image-wrap">
+								<a class="stay-image-link" href={getPropertyPath(stay)} aria-label={`View ${stay.name}`}>
+									<img class="stay-image" src={`https://images.unsplash.com/${stay.cardImage}?auto=format&fit=crop&w=600&q=85`} alt={stay.name} loading="lazy" />
+									<span class="favorite-badge">Guest favorite</span>
+								</a>
+								<button class="favorite-button" type="button" aria-label={`Save ${stay.name}`} aria-pressed="false">♡</button>
+							</div>
+							<h2><a href={getPropertyPath(stay)}>{stay.cardName}</a></h2>
+							<p class="stay-meta"><span>{formatMoney(stay.pricePerNight * stay.defaultNights)} for {stay.defaultNights} nights</span><span aria-hidden="true">·</span><span>★ {stay.rating}</span></p>
+						</article>
+					))}
+				</section>
+			</main>
+		</div>
+		<script>
+			document.querySelectorAll('.favorite-button').forEach((button) => {
+				button.addEventListener('click', () => {
+					const saved = button.getAttribute('aria-pressed') !== 'true';
+					button.setAttribute('aria-pressed', String(saved));
+					button.textContent = saved ? '♥' : '♡';
+					const stayName = button.closest('.stay-card')?.querySelector('h2')?.textContent || '';
+					button.setAttribute('aria-label', `${saved ? 'Remove' : 'Save'} ${stayName}`);
+				});
+			});
+		</script>
+		<style>
+			.dhaka-page{max-width:1540px;margin:0 auto;padding:0 clamp(8px,1.8vw,24px) 48px}
+			.listing-header{display:flex;align-items:center;justify-content:space-between;min-height:62px;border-bottom:1px solid var(--border)}
+			.listing-brand{display:block;width:138px;line-height:0}
+			.listing-brand img{width:100%;height:auto;background:transparent;object-fit:contain}
+			.back-link,.search-again{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:600}
+			.back-link span,.search-again span{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--surface-soft);font-size:17px}
+			.results-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:34px 0 24px}
+			.results-location{margin-bottom:6px;color:var(--mut);font-size:13px;font-weight:600}
+			.results-location span{padding:0 5px;color:var(--brand)}
+			h1{font-family:Unbounded,'Instrument Sans',sans-serif;font-size:clamp(24px,3vw,34px);font-weight:500;line-height:1.2}
+			.results-summary{margin-top:8px;color:var(--mut);font-size:14px}
+			.results-summary span{padding:0 5px}
+			.search-again{flex:0 0 auto;padding-bottom:3px}
+			.search-again span{background:var(--brand);color:#fff}
+			.stay-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:20px 14px}
+			.stay-card{min-width:0}
+			.stay-image-wrap{position:relative;aspect-ratio:1/1;overflow:hidden;border-radius:20px;background:var(--surface-soft)}
+			.stay-image-link{position:absolute;inset:0;display:block}
+			.stay-image{width:100%;height:100%;object-fit:cover;transition:transform .35s ease}
+			.stay-card:hover .stay-image{transform:scale(1.035)}
+			.favorite-badge{position:absolute;top:12px;left:12px;padding:5px 11px;border-radius:999px;background:#fff;color:#28252d;font-size:12px;font-weight:600;box-shadow:0 2px 8px #0002}
+			.favorite-button{position:absolute;top:10px;right:10px;display:grid;place-items:center;width:34px;height:34px;padding:0;border:0;background:transparent;color:#fff;font-size:30px;line-height:1;text-shadow:0 1px 4px #000b;cursor:pointer}
+			.favorite-button[aria-pressed=true]{color:#ff3155}
+			.stay-card h2{margin:8px 4px 1px;font-family:'Instrument Sans',sans-serif;font-size:15px;font-weight:500;line-height:1.35}
+			.stay-meta{display:flex;flex-wrap:wrap;gap:4px;margin:0 4px;color:var(--mut);font-size:14px;line-height:1.4}
+			@media(max-width:1100px){.stay-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+			@media(max-width:760px){.stay-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 12px}.results-heading{padding-top:26px}}
+			@media(max-width:560px){.stay-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 10px}.stay-image-wrap{border-radius:15px}.favorite-badge{top:8px;left:8px;padding:5px 8px;font-size:11px}.favorite-button{top:6px;right:6px}.results-heading{align-items:flex-start;flex-direction:column;gap:12px;padding:24px 0 18px}.search-again{padding:0}}
+			@media(max-width:360px){.listing-brand{width:116px}.stay-card h2{font-size:14px}.stay-meta{font-size:12px}}
+		</style>
+	</body>
+</html>

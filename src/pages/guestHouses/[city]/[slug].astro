@@ -1,0 +1,30 @@
+---
+import PageLayout from '../../../layouts/PageLayout.astro';
+import PropertyDetails from '../../../components/property-details.astro';
+import { getPropertyDetails, properties, type PropertyListing } from '../../../data/property-details';
+
+interface Props {
+	property: PropertyListing;
+}
+
+export function getStaticPaths() {
+	return properties.map((property) => ({
+			params: {
+				city: property.city.toLowerCase().replace(/\s+/g, '-'),
+				slug: property.slug,
+			},
+			props: { property },
+		}));
+}
+
+const { property } = Astro.props;
+const details = getPropertyDetails(property);
+---
+
+<PageLayout
+	title={`${property.name} | GuesthouseBD`}
+	description={`${details.propertyType} in ${details.location.area}, ${property.city}. View photos, amenities and available dates on GuesthouseBD.`}
+	includeSiteScript={false}
+>
+	<PropertyDetails property={property} />
+</PageLayout>

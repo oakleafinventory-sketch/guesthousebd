@@ -426,12 +426,32 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObse
 }
 
 const destinations = [
-	['/assets/area/chittagong.jpg', 'Chittagong', 'Hill valley in Chittagong'],
-	['/assets/area/coxbazar.jpg', "Cox's Bazar", "Beach in Cox's Bazar"],
-	['/assets/area/Dhaka.jpg', 'Dhaka', 'Dhaka city skyline at night'],
-	['/assets/area/sylhet.jpg', 'Sylhet', 'Lake and green hills in Sylhet'],
+	['/assets/area/chittagong.jpg', 'Chittagong', 'Hill valley in Chittagong', '/assets/animation/areas/chittagong.mp4'],
+	['/assets/area/coxbazar.jpg', "Cox's Bazar", "Beach in Cox's Bazar", '/assets/animation/areas/coxbazar.mp4'],
+	['/assets/area/Dhaka.jpg', 'Dhaka', 'Dhaka city skyline at night', '/assets/animation/areas/dhaka.mp4', '/guestHouses/dhaka/'],
+	['/assets/area/sylhet.jpg', 'Sylhet', 'Lake and green hills in Sylhet', '/assets/animation/areas/sylhet.mp4'],
 ];
-arches.innerHTML = destinations.map(([image, name, alt]) => `<figure class="area-card"><img src="${image}" alt="${alt}"><figcaption class="area-name">${name}</figcaption></figure>`).join('');
+arches.innerHTML = destinations.map(([image, name, alt, video, href]) => {
+	const content = `<img src="${image}" alt="${alt}"><video class="area-video" muted playsinline loop preload="none" aria-hidden="true"><source src="${video}" type="video/mp4"></video><span class="area-name">${name}</span>`;
+	return href
+		? `<a class="area-card" href="${href}" aria-label="Guesthouses in ${name}">${content}</a>`
+		: `<figure class="area-card">${content}</figure>`;
+}).join('');
+arches.querySelectorAll('.area-card').forEach((card) => {
+	const video = card.querySelector('.area-video');
+	if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+	const playVideo = () => video.play().then(() => card.classList.add('is-playing')).catch(() => card.classList.remove('is-playing'));
+	const stopVideo = () => {
+		if (card.matches(':hover') || card.contains(document.activeElement)) return;
+		card.classList.remove('is-playing');
+		video.pause();
+		video.currentTime = 0;
+	};
+	card.addEventListener('pointerenter', playVideo);
+	card.addEventListener('pointerleave', stopVideo);
+	card.addEventListener('focusin', playVideo);
+	card.addEventListener('focusout', stopVideo);
+});
 const homes = [
 	['photo-1564013799919-ab600027ffc6', 'homes.kerala', 120, 'Kerala'],
 	['photo-1582719478250-c89cae4dc85b', 'homes.calangute', 85, 'Calangute'],

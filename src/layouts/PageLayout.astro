@@ -3,9 +3,11 @@ import '../styles/global.css';
 
 interface Props {
 	title?: string;
+	description?: string;
+	includeSiteScript?: boolean;
 }
 
-const { title = 'GuesthouseBD — Stays, rides & with local guides' } = Astro.props;
+const { title = 'GuesthouseBD — Stays, rides & with local guides', description, includeSiteScript = true } = Astro.props;
 ---
 
 <!doctype html>
@@ -14,6 +16,7 @@ const { title = 'GuesthouseBD — Stays, rides & with local guides' } = Astro.pr
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="generator" content={Astro.generator} />
+		{description && <meta name="description" content={description} />}
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -22,6 +25,6 @@ const { title = 'GuesthouseBD — Stays, rides & with local guides' } = Astro.pr
 	</head>
 	<body>
 		<slot />
-		<script src="../scripts/site.js"></script>
+		{includeSiteScript && <script src="../scripts/site.js"></script>}
 	</body>
 </html>

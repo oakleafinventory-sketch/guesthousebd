@@ -1,0 +1,356 @@
+---
+import { getPropertyDetails, type PropertyListing } from '../data/property-details';
+
+interface Props {
+	property: PropertyListing;
+}
+
+const { property } = Astro.props;
+const details = getPropertyDetails(property);
+const gallery = details.photos;
+const amenities = details.amenities;
+const reviewHighlights = details.highlights;
+const totalPrice = property.pricePerNight * property.defaultNights;
+const originalPrice = property.originalPricePerNight * property.defaultNights;
+const discount = originalPrice - totalPrice;
+const stayFacts = [
+	details.guestCapacity ? `${details.guestCapacity} guests` : '',
+	details.bedrooms ? `${details.bedrooms} bedrooms` : '',
+	details.bathrooms ? `${details.bathrooms} baths` : '',
+].filter(Boolean).join(' · ');
+const formatMoney = (amount: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(amount);
+---
+
+		<div class="property-page" data-property-rate={property.pricePerNight} data-property-original-rate={property.originalPricePerNight} data-default-nights={property.defaultNights} data-default-guests={property.defaultGuests} data-max-guests={property.maxGuests}>
+			<header class="property-header">
+				<div class="property-header-inner">
+					<a class="property-brand" href="/" aria-label="GuesthouseBD home"><img src="/assets/logo/logo.png" alt="GuesthouseBD" /></a>
+					<div class="property-search" role="group" aria-label="Stay search">
+						<button type="button" class="property-search-item" data-focus-location><span>Location</span><strong>{details.location.area}</strong></button>
+						<button type="button" class="property-search-item" data-focus-checkin><span>Dates</span><strong data-header-dates>Add dates</strong></button>
+						<button type="button" class="property-search-item property-search-guests" data-focus-guests><span>Guests</span><strong data-header-guests>{property.defaultGuests} guest</strong></button>
+						<button type="button" class="property-search-submit" data-jump-booking aria-label="Go to reservation details"><span aria-hidden="true">⌕</span></button>
+					</div>
+					<div class="header-actions">
+						<button class="quiet-action" type="button" data-share aria-label="Share this stay"><span aria-hidden="true">↗</span><span>Share</span></button>
+						<button class="quiet-action save-action" type="button" data-save aria-label="Save this stay" aria-pressed="false"><span class="save-heart" aria-hidden="true">♡</span><span data-save-label>Save</span></button>
+					</div>
+				</div>
+			</header>
+
+			<main id="content" class="property-main">
+				<div class="property-heading" data-reveal>
+					<div class="heading-copy">
+						<p class="eyebrow">{details.location.area.toUpperCase()} · {property.city.toUpperCase()}</p>
+						<h1>{property.name}</h1>
+						<div class="property-rating"><span class="rating-star" aria-hidden="true">★</span><strong>{property.rating}</strong><a href="#reviews">{property.reviewCount} reviews</a><span class="rating-dot" aria-hidden="true">·</span><span>{property.city}, {details.location.country}</span></div>
+					</div>
+					<button class="photos-button" type="button" data-open-gallery data-gallery-index="0"><span aria-hidden="true">▦</span> View all photos</button>
+				</div>
+
+				<section id="photos" class={`photo-gallery${gallery.length === 1 ? ' photo-gallery-single' : ''}`} aria-label={`Photos of ${property.cardName}`}>
+					{gallery.map((photo, index) => (
+						<button class={`photo-tile${index === 0 ? ' photo-tile-primary' : ''}`} type="button" data-open-gallery data-gallery-index={index} aria-label={`Open photo ${index + 1} of ${gallery.length}: ${photo.alt}`}>
+							<img src={`https://images.unsplash.com/${photo.image}?auto=format&fit=crop&w=${index === 0 ? 1400 : 700}&q=85`} alt={photo.alt} loading={index === 0 ? 'eager' : 'lazy'} />
+						</button>
+					))}
+					<span class="photo-count" aria-hidden="true">01 <span>/</span> {String(gallery.length).padStart(2, '0')}</span>
+				</section>
+				<nav class="property-section-nav" aria-label="Property sections">
+					<a href="#photos">Photos</a>
+					{amenities.length > 0 && <a href="#amenities">Amenities</a>}
+					<a href="#reviews">Reviews</a>
+					<a href="#location">Location</a>
+				</nav>
+
+				<div class="property-layout">
+					<div class="property-content">
+						<section id="overview" class="overview-section content-section" data-reveal>
+							<div class="overview-top">
+								<div>
+									<p class="eyebrow">THE STAY</p>
+									<h2>{details.propertyType} in {property.city}, {details.location.country}</h2>
+									<p class="stay-facts">{stayFacts || 'Ask the host for sleeping arrangements'}</p>
+								</div>
+								<div class="host-mark" aria-label={`Hosted by ${details.host.name}`}><span>{details.host.initials}</span><small>{details.host.role.toUpperCase()}</small></div>
+							</div>
+							<div class="detail-rule"></div>
+							<ul class="comfort-list" aria-label="Stay highlights">
+								{(details.bedrooms || details.guestCapacity) && <li><span class="comfort-icon" aria-hidden="true">⌂</span><span><strong>Space to spread out</strong><small>{details.bedrooms ? `${details.bedrooms} bedrooms` : `${details.guestCapacity} guest capacity`}{details.guestCapacity ? ` · room for ${details.guestCapacity}` : ''}</small></span></li>}
+								<li><span class="comfort-icon" aria-hidden="true">✦</span><span><strong>{property.details ? 'Guest favorite' : 'Guest rating'}</strong><small>Rated {property.rating} by {property.reviewCount} guests</small></span></li>
+								<li><span class="comfort-icon" aria-hidden="true">⌖</span><span><strong>In {details.location.area}</strong><small>Close to everyday city essentials</small></span></li>
+							</ul>
+							<div class="detail-rule"></div>
+						</section>
+
+						<section class="content-section description-section" data-reveal>
+							<p class="eyebrow">PROPERTY DETAILS</p>
+							<h2>{details.descriptionTitle}</h2>
+							<p class="description-copy">{details.description}</p>
+							<p class="description-copy description-extra" data-description-extra hidden>{details.descriptionExtra}</p>
+							<button class="text-button" type="button" data-description-toggle aria-expanded="false">Read more <span aria-hidden="true">↓</span></button>
+						</section>
+
+						{amenities.length > 0 && <section id="amenities" class="content-section amenities-section" data-reveal>
+							<div class="section-title-row"><div><p class="eyebrow">THOUGHTFUL DETAILS</p><h2>What this place offers</h2></div><span class="section-index">01 — {String(amenities.length).padStart(2, '0')}</span></div>
+							<ul class="amenity-preview">
+								{amenities.slice(0, 6).map((amenity) => <li><span class="amenity-icon" aria-hidden="true">{amenity.icon}</span><span>{amenity.name}</span></li>)}
+							</ul>
+							<button class="outline-button" type="button" data-open-amenities>See all {amenities.length} amenities <span aria-hidden="true">↗</span></button>
+						</section>}
+
+						<section id="reviews" class="content-section reviews-section" data-reveal>
+							<div class="review-heading"><p class="eyebrow">GUEST NOTES</p><h2><span aria-hidden="true">★</span> {property.rating} <small>· {property.reviewCount} reviews</small></h2><p>Consistently loved for its comfort, location and easy arrivals.</p></div>
+							<div class="review-highlights">
+								{reviewHighlights.map((highlight, index) => <div class="review-highlight"><span class="review-mark" aria-hidden="true">{index === 0 ? '✦' : index === 1 ? '⌂' : '↗'}</span><strong>{highlight.title}</strong><span class="review-score">{highlight.score}</span><small>{highlight.detail}</small></div>)}
+							</div>
+							<p class="review-disclaimer">Guest comments will appear here when review data is connected.</p>
+						</section>
+
+						<section id="location" class="content-section location-section" data-reveal>
+							<div class="section-title-row"><div><p class="eyebrow">FIND YOUR WAY</p><h2>In {details.location.area}, {property.city}</h2></div><span class="map-label"><span aria-hidden="true">⌖</span> {property.city.toUpperCase()}</span></div>
+							<div class="location-visual"><img src={details.location.image} alt={`View near ${details.location.area}, ${property.city}`} loading="lazy" /><div class="location-pin"><span aria-hidden="true">⌖</span><strong>{details.location.area}</strong><small>{property.city}, {details.location.country}</small></div><p>{details.location.addressNote}</p></div>
+							<p class="location-copy">{details.location.description}</p>
+						</section>
+
+						<section class="host-section content-section" data-reveal>
+							<div class="host-avatar">{details.host.initials}</div>
+							<div><p class="eyebrow">YOUR LOCAL CONTACT</p><h2>Hosted by {details.host.name}</h2><p>{details.host.description}</p></div>
+						</section>
+					</div>
+
+					<aside class="booking-column" aria-label={`Reserve ${property.cardName}`}>
+						<div class="reservation-card">
+							<div class="booking-price-row"><div><strong data-price-total>{formatMoney(totalPrice)}</strong><del data-price-original>{formatMoney(originalPrice)}</del><span data-price-nights>for {property.defaultNights} nights</span></div><span class="price-tag"><span aria-hidden="true">↓</span> Better price</span></div>
+							<div class="booking-controls">
+								<label class="date-field"><span>CHECK-IN</span><input id="check-in" type="date" /></label>
+								<label class="date-field"><span>CHECKOUT</span><input id="check-out" type="date" /></label>
+								<div class="guest-field"><div><span>GUESTS</span><output id="guest-count" aria-live="polite">{property.defaultGuests} guest</output></div><div class="guest-stepper"><button type="button" data-guest-step="-1" aria-label="Remove a guest">−</button><output id="guest-number">{property.defaultGuests}</output><button type="button" data-guest-step="1" aria-label="Add a guest">+</button></div></div>
+							</div>
+							<p class="date-error" id="date-error" role="alert" hidden>Choose a checkout after your check-in.</p>
+							<button class="reserve-button" type="button" data-reserve>Reserve <span aria-hidden="true">→</span></button>
+							<p class="reserve-note">You won't be charged yet</p>
+							<div class="price-breakdown"><div><span><span data-nightly-price>{formatMoney(property.originalPricePerNight)}</span> × <span data-night-count>{property.defaultNights}</span> nights</span><span data-subtotal>{formatMoney(originalPrice)}</span></div><div><span>Stay discount</span><span class="discount-value" data-discount>−{formatMoney(discount)}</span></div><div class="total-line"><strong>Total before taxes</strong><strong data-price-total>{formatMoney(totalPrice)}</strong></div></div>
+							<button class="fee-note" type="button" data-fee-note><span aria-hidden="true">ⓘ</span> Price includes all fees</button>
+						</div>
+						<p class="booking-assurance"><span aria-hidden="true">◈</span> Free cancellation for 24 hours</p>
+					</aside>
+				</div>
+			</main>
+
+			<footer class="property-footer"><a href="/guestHouses/dhaka/">← Back to {property.city} stays</a><span>GuesthouseBD · Find your place in the city</span></footer>
+			<div class="mobile-reserve-bar"><div><strong data-price-total>{formatMoney(totalPrice)}</strong><span data-price-nights>for {property.defaultNights} nights</span></div><button type="button" data-reserve>Reserve</button></div>
+			<div class="toast-message" id="toast-message" role="status" aria-live="polite"></div>
+		</div>
+
+		<dialog class="gallery-dialog" id="gallery-dialog" aria-label="Photo gallery">
+			<div class="dialog-top"><p><strong id="gallery-count">01 / {String(gallery.length).padStart(2, '0')}</strong><span>Photos of {property.cardName}</span></p><button type="button" class="icon-button" data-close-gallery aria-label="Close gallery">×</button></div>
+			<div class="gallery-stage"><button class="gallery-arrow" type="button" data-gallery-prev aria-label="Previous photo">‹</button><figure><img id="gallery-image" src={`https://images.unsplash.com/${gallery[0].image}?auto=format&fit=crop&w=1600&q=90`} alt={gallery[0].alt} /><figcaption id="gallery-caption">{gallery[0].alt}</figcaption></figure><button class="gallery-arrow" type="button" data-gallery-next aria-label="Next photo">›</button></div>
+			<div class="gallery-thumbnails" aria-label="Choose a photo">
+				{gallery.map((photo, index) => <button type="button" data-gallery-select={index} aria-label={`Show photo ${index + 1}: ${photo.alt}`} aria-current={index === 0 ? 'true' : 'false'}><img src={`https://images.unsplash.com/${photo.image}?auto=format&fit=crop&w=180&q=70`} alt="" loading="lazy" /></button>)}
+			</div>
+		</dialog>
+
+		{amenities.length > 0 && <dialog class="amenities-dialog" id="amenities-dialog" aria-labelledby="amenities-dialog-title">
+			<div class="dialog-top"><p><strong id="amenities-dialog-title">All {amenities.length} amenities</strong><span>Comforts for your stay</span></p><button type="button" class="icon-button" data-close-amenities aria-label="Close amenities">×</button></div>
+			<ul class="all-amenities">{amenities.map((amenity) => <li><span class="amenity-icon" aria-hidden="true">{amenity.icon}</span><span><strong>{amenity.name}</strong><small>{amenity.detail}</small></span></li>)}</ul>
+		</dialog>}
+
+		<dialog class="reserve-dialog" id="reserve-dialog" aria-labelledby="reserve-dialog-title">
+			<div class="dialog-top"><p><strong>YOUR STAY</strong><span>Reservation details</span></p><button type="button" class="icon-button" data-close-reservation aria-label="Close reservation details">×</button></div>
+			<div class="reserve-confirmation"><span class="confirmation-mark" aria-hidden="true">✓</span><p class="eyebrow">READY WHEN YOU ARE</p><h2 id="reserve-dialog-title">Review your stay</h2><p class="confirm-dates" data-confirm-dates></p><p class="confirm-guests" data-confirm-guests></p><div class="confirm-total"><span>Estimated total</span><strong data-confirm-total></strong></div><p class="demo-disclaimer">This preview doesn't submit a booking or charge a payment method.</p><button type="button" class="reserve-button" data-close-reservation>Back to the stay</button></div>
+		</dialog>
+		<script src="../scripts/property.ts"></script>
+		<style>
+			:global(body){padding:0;background:#fff;color:#20201e;font-family:'Instrument Sans',sans-serif}
+			:global(html){scroll-padding-top:140px}
+			.property-page{--property-ink:#20201e;--property-muted:#706f69;--property-line:#e8e7e1;--property-paper:#fff;--property-soft:#f5f5ef;--property-accent:#e6183d;--property-header-height:72px;min-height:100vh;padding-bottom:40px;background:var(--property-paper);color:var(--property-ink)}
+			.property-header{position:sticky;top:0;z-index:20;border-bottom:1px solid var(--property-line);background:#fffffff2;backdrop-filter:blur(14px)}
+			.property-header-inner{display:grid;grid-template-columns:142px minmax(280px,440px) 142px;align-items:center;justify-content:space-between;gap:24px;width:min(1280px,calc(100% - 48px));height:72px;margin:0 auto}
+			.property-brand{display:block;flex:0 0 142px;width:142px;line-height:0}
+			.property-brand img{width:100%;height:auto;object-fit:contain;background:transparent}
+			.property-search{display:flex;align-items:center;justify-self:center;width:min(440px,100%);min-width:0;height:48px;padding:4px;border:1px solid var(--property-line);border-radius:999px;background:#fff;box-shadow:0 3px 12px #20201e12}
+			.property-search-item{display:flex;flex:1;flex-direction:column;justify-content:center;min-width:0;height:100%;padding:0 13px;border:0;border-right:1px solid var(--property-line);background:transparent;color:var(--property-ink);text-align:left;cursor:pointer}
+			.property-search-item:hover{background:var(--property-soft)}
+			.property-search-item>span{color:var(--property-muted);font-size:9px;font-weight:700;line-height:1.1;text-transform:uppercase}
+			.property-search-item strong{overflow:hidden;margin-top:3px;font-size:12px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
+			.property-search-guests{border-right:0}
+			.property-search-submit{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border:0;border-radius:50%;background:var(--property-accent);color:#fff;font-size:24px;line-height:1;cursor:pointer;transition:transform .2s,background .2s}
+			.property-search-submit:hover{background:#c91434;transform:scale(1.04)}
+			.property-section-nav{position:sticky;top:var(--property-header-height);z-index:19;display:flex;align-items:center;gap:30px;min-height:58px;margin:0 calc((100% - 100vw)/2);padding:0 max(24px,calc((100vw - 1180px)/2));border-bottom:1px solid var(--property-line);background:#fffffff5;backdrop-filter:blur(14px)}
+			.property-section-nav a{display:grid;align-content:center;min-height:58px;border-bottom:2px solid transparent;color:var(--property-muted);font-size:13px;font-weight:600;transition:color .2s,border-color .2s}
+			.property-section-nav a:hover,.property-section-nav a[aria-current=location]{border-color:var(--property-accent);color:var(--property-ink)}
+			.header-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px}
+			.quiet-action{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border:0;border-radius:999px;background:transparent;color:var(--property-ink);font:inherit;font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer;transition:background .2s,transform .2s}
+			.quiet-action:hover{background:var(--property-soft)}
+			.quiet-action>span:first-child{font-size:18px;line-height:1}
+			.save-heart{color:var(--property-accent);font-size:20px!important}
+			.save-action[aria-pressed=true]{color:var(--property-accent)}
+			.property-main{width:min(1180px,calc(100% - 48px));margin:0 auto}
+			.property-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding:28px 0 20px}
+			.heading-copy{min-width:0}
+			.eyebrow{margin-bottom:8px;color:#838178;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+			h1{max-width:850px;font-family:'Instrument Sans',sans-serif;font-size:clamp(25px,3.2vw,36px);font-weight:600;letter-spacing:0;line-height:1.13}
+			.property-rating{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px}
+			.property-rating a{font-weight:600;text-decoration:underline;text-underline-offset:3px}
+			.rating-star{color:#c3482d;font-size:16px}
+			.rating-dot{color:#a3a199}
+			.photos-button,.outline-button{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:42px;padding:0 15px;border:1px solid var(--property-ink);border-radius:6px;background:#fff;color:var(--property-ink);font:inherit;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background .2s,color .2s,transform .2s}
+			.photos-button:hover,.outline-button:hover{background:var(--property-ink);color:#fff}
+			.photos-button:active,.outline-button:active{transform:scale(.98)}
+			.photos-button>span{font-size:17px}
+			.photo-gallery{position:relative;display:grid;grid-template-columns:1.45fr 1fr 1fr;grid-template-rows:190px 190px;gap:8px;overflow:hidden;border-radius:10px;background:#ecebe6}
+			.photo-gallery-single{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(300px,420px)}
+			.photo-gallery-single .photo-tile:first-child{grid-row:auto}
+			.photo-tile{position:relative;display:block;min-width:0;min-height:0;padding:0;overflow:hidden;border:0;background:#deddd6;cursor:pointer}
+			.photo-tile:first-child{grid-row:span 2}
+			.photo-tile img{width:100%;height:100%;object-fit:cover;transition:transform .55s cubic-bezier(.2,.75,.25,1)}
+			.photo-tile:hover img{transform:scale(1.035)}
+			.photo-tile:focus-visible{z-index:1;outline:3px solid var(--property-accent);outline-offset:-3px}
+			.photo-count{display:none}
+			.property-layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;align-items:start;gap:64px;padding:34px 0 56px}
+			.property-content{min-width:0}
+			.content-section{padding:0 0 32px;scroll-margin-top:96px}
+			.overview-top{display:flex;align-items:center;justify-content:space-between;gap:18px}
+			h2{font-family:'Instrument Sans',sans-serif;font-size:21px;font-weight:600;letter-spacing:0;line-height:1.3}
+			.stay-facts{margin-top:5px;color:var(--property-muted);font-size:14px}
+			.stay-facts span{padding:0 5px}
+			.host-mark{display:flex;align-items:center;gap:9px;color:var(--property-muted)}
+			.host-mark>span,.host-avatar{display:grid;place-items:center;width:48px;height:48px;border:1px solid #c7cec0;border-radius:50%;background:#e9ece3;color:#43503f;font-family:'Instrument Serif',serif;font-size:19px}
+			.host-mark small{font-size:9px;font-weight:700;line-height:1.35;letter-spacing:.6px}
+			.detail-rule{height:1px;margin:24px 0;border:0;background:var(--property-line)}
+			.comfort-list{display:grid;gap:18px;padding:0;list-style:none}
+			.comfort-list li{display:flex;align-items:center;gap:15px}
+			.comfort-icon{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border:1px solid var(--property-line);border-radius:50%;font-size:17px}
+			.comfort-list strong,.comfort-list small{display:block}
+			.comfort-list strong{font-size:14px;font-weight:600}
+			.comfort-list small{margin-top:2px;color:var(--property-muted);font-size:12px}
+			.description-section h2,.amenities-section h2,.location-section h2,.host-section h2{margin-bottom:12px}
+			.description-copy{max-width:680px;margin:0 0 12px;color:#4c4b46;font-size:15px;line-height:1.75}
+			.text-button{display:inline-flex;align-items:center;gap:8px;margin-top:3px;padding:5px 0;border:0;border-bottom:1px solid currentColor;background:none;color:var(--property-ink);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+			.text-button span{font-size:17px}
+			.description-extra{margin-top:12px}
+			.section-title-row{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:18px}
+			.section-title-row .eyebrow{margin-bottom:7px}
+			.section-index{color:#929087;font-size:11px;font-variant-numeric:tabular-nums}
+			.amenity-preview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 20px;margin:0 0 22px;padding:0;list-style:none}
+			.amenity-preview li{display:flex;align-items:center;gap:12px;min-width:0;font-size:14px}
+			.amenity-icon{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;border:1px solid var(--property-line);border-radius:50%;color:#58584d;font-size:17px}
+			.outline-button{min-height:42px;background:transparent}
+			.review-heading{text-align:center}
+			.review-heading .eyebrow{margin-bottom:8px}
+			.review-heading h2{font-family:'Instrument Serif',serif;font-size:54px;font-weight:400;line-height:1}
+			.review-heading h2 span{color:#c3482d;font-family:'Instrument Sans',sans-serif;font-size:25px;vertical-align:middle}
+			.review-heading h2 small{font-family:'Instrument Sans',sans-serif;font-size:13px;font-weight:500;color:var(--property-muted)}
+			.review-heading>p:last-child{margin-top:10px;color:var(--property-muted);font-size:13px}
+			.review-highlights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin-top:24px;border-top:1px solid var(--property-line);border-bottom:1px solid var(--property-line)}
+			.review-highlight{position:relative;display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:5px 8px;min-width:0;padding:16px 12px;border-right:1px solid var(--property-line)}
+			.review-highlight:last-child{border-right:0}
+			.review-mark{grid-row:span 2;color:#7b796f;font-size:18px}
+			.review-highlight strong{font-size:12px;font-weight:600}
+			.review-score{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+			.review-highlight small{grid-column:2/-1;color:var(--property-muted);font-size:10px;line-height:1.35}
+			.review-disclaimer{margin-top:14px;color:#89877e;font-size:11px;text-align:center}
+			.map-label{display:inline-flex;align-items:center;gap:6px;color:#6c6a61;font-size:10px;font-weight:700;letter-spacing:.8px}
+			.location-visual{position:relative;height:260px;overflow:hidden;border-radius:8px;background:#dce3d8}
+			.location-visual>img{width:100%;height:100%;object-fit:cover;filter:saturate(.82)}
+			.location-visual::after{position:absolute;inset:0;background:linear-gradient(90deg,#17241b55,transparent 80%);content:""}
+			.location-pin{position:absolute;top:50%;left:50%;z-index:1;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:160px;padding:12px 16px;border:1px solid #ffffffaa;border-radius:8px;background:#ffffffed;box-shadow:0 8px 28px #1a201a30;text-align:center;transform:translate(-50%,-50%)}
+			.location-pin>span{color:var(--property-accent);font-size:23px}
+			.location-pin strong{font-size:13px}
+			.location-pin small{color:var(--property-muted);font-size:11px}
+			.location-visual>p{position:absolute;right:10px;bottom:10px;z-index:2;padding:6px 9px;border-radius:4px;background:#fff;color:#56564e;font-size:10px}
+			.location-copy{max-width:680px;margin-top:13px;color:var(--property-muted);font-size:13px;line-height:1.6}
+			.host-section{display:flex;align-items:center;gap:15px;border-top:1px solid var(--property-line)}
+			.host-section .host-avatar{flex:0 0 52px;width:52px;height:52px}
+			.host-section .eyebrow{margin-bottom:5px}
+			.host-section h2{margin:0;font-size:17px}
+			.host-section p:last-child{margin-top:4px;color:var(--property-muted);font-size:12px}
+			.booking-column{position:sticky;top:96px}
+			.reservation-card{padding:22px;border:1px solid #ddded5;border-radius:10px;background:#fff;box-shadow:0 8px 24px #28291e0d}
+			.booking-price-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}
+			.booking-price-row>div{display:flex;align-items:baseline;flex-wrap:wrap;gap:5px}
+			.booking-price-row>div strong{font-size:25px;font-weight:700}
+			.booking-price-row del{color:#96948b;font-size:13px}
+			.booking-price-row>div>span{color:var(--property-muted);font-size:12px}
+			.price-tag{display:inline-flex;align-items:center;gap:5px;margin-top:4px;padding:5px 7px;border-radius:4px;background:#f5efe5;color:#71462f;font-size:10px;font-weight:700;white-space:nowrap}
+			.price-tag span{font-size:15px}
+			.booking-controls{overflow:hidden;border:1px solid #aaa99f;border-radius:6px}
+			.date-field{display:flex;flex-direction:column;gap:2px;min-width:0;padding:10px 11px 8px}
+			.date-field:first-child{border-right:1px solid #d8d7d0}
+			.booking-controls{display:grid;grid-template-columns:1fr 1fr}
+			.date-field span,.guest-field>div:first-child>span{font-size:9px;font-weight:700;letter-spacing:.6px}
+			.date-field input{width:100%;min-width:0;border:0;background:transparent;color:var(--property-ink);font:inherit;font-size:12px}
+			.guest-field{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 11px;border-top:1px solid #d8d7d0}
+			.guest-field>div:first-child{display:flex;flex-direction:column;gap:2px}
+			.guest-field output{font-size:12px}
+			.guest-stepper{display:flex;align-items:center;gap:12px}
+			.guest-stepper button{display:grid;place-items:center;width:28px;height:28px;border:1px solid #aaa99f;border-radius:50%;background:#fff;color:var(--property-ink);font-size:17px;line-height:1;cursor:pointer;transition:background .2s}
+			.guest-stepper button:hover{background:var(--property-soft)}
+			.guest-stepper output{min-width:14px;text-align:center;font-variant-numeric:tabular-nums}
+			.date-error{margin-top:8px;color:#b42335;font-size:11px}
+			.reserve-button{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:48px;margin-top:14px;padding:0 16px;border:0;border-radius:5px;background:var(--property-accent);color:#fff;font:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:background .2s,transform .2s}
+			.reserve-button:hover{background:#c91434;transform:translateY(-1px)}
+			.reserve-button:active{transform:scale(.99)}
+			.reserve-button span{font-size:18px}
+			.reserve-note{margin:9px 0 16px;color:var(--property-muted);font-size:11px;text-align:center}
+			.price-breakdown{display:grid;gap:11px;padding-top:15px;border-top:1px solid var(--property-line)}
+			.price-breakdown>div{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#515149;font-size:12px}
+			.discount-value{color:#34765a}
+			.price-breakdown .total-line{margin-top:3px;padding-top:13px;border-top:1px solid var(--property-line);color:var(--property-ink)}
+			.total-line strong{font-size:13px}
+			.fee-note{display:flex;align-items:center;gap:7px;margin:15px auto 0;padding:4px 0;border:0;border-bottom:1px solid currentColor;background:transparent;color:#55554e;font:inherit;font-size:11px;cursor:pointer}
+			.fee-note span{font-size:15px}
+			.booking-assurance{display:flex;align-items:center;gap:8px;margin-top:15px;color:#67665e;font-size:12px}
+			.booking-assurance span{color:#3f765a;font-size:17px}
+			.property-footer{display:flex;align-items:center;justify-content:space-between;gap:14px;width:min(1180px,calc(100% - 48px));margin:0 auto;padding:20px 0;border-top:1px solid var(--property-line);color:var(--property-muted);font-size:12px}
+			.property-footer a{color:var(--property-ink);font-weight:600}
+			.mobile-reserve-bar{display:none}
+			.toast-message{position:fixed;right:24px;bottom:24px;z-index:55;max-width:calc(100vw - 32px);padding:12px 17px;border-radius:5px;background:#20201e;color:#fff;font-size:13px;opacity:0;pointer-events:none;transform:translateY(10px);transition:opacity .2s,transform .2s}
+			.toast-message.is-visible{opacity:1;transform:translateY(0)}
+			.gallery-dialog,.amenities-dialog,.reserve-dialog{width:min(900px,calc(100% - 32px));max-width:none;max-height:min(90dvh,900px);margin:auto;padding:0;overflow:auto;border:0;border-radius:10px;background:#fff;color:var(--property-ink);box-shadow:0 22px 80px #0004}
+			.gallery-dialog{width:min(1120px,calc(100% - 32px));background:#191a17;color:#fff}
+			.gallery-dialog::backdrop,.amenities-dialog::backdrop,.reserve-dialog::backdrop{background:#171812b8;backdrop-filter:blur(4px)}
+			.dialog-top{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 22px;border-bottom:1px solid var(--property-line);background:#fff}
+			.dialog-top p{display:flex;flex-direction:column;gap:3px}
+			.dialog-top strong{font-size:15px}
+			.dialog-top p>span{color:var(--property-muted);font-size:11px}
+			.icon-button{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border:1px solid var(--property-line);border-radius:50%;background:#fff;color:var(--property-ink);font-size:25px;line-height:1;cursor:pointer}
+			.gallery-dialog .dialog-top{border-color:#ffffff2b;background:#191a17;color:#fff}
+			.gallery-dialog .dialog-top p>span{color:#d3d3cc}
+			.gallery-dialog .icon-button{border-color:#ffffff4a;background:transparent;color:#fff}
+			.gallery-stage{display:grid;grid-template-columns:54px minmax(0,1fr) 54px;align-items:center;gap:10px;padding:22px 24px 14px}
+			.gallery-stage figure{min-width:0}
+			.gallery-stage figure img{display:block;width:100%;height:min(60vh,590px);object-fit:contain;background:#191a17}
+			.gallery-stage figcaption{margin-top:7px;color:#d3d3cc;font-size:11px;text-align:center}
+			.gallery-arrow{display:grid;place-items:center;width:46px;height:46px;border:1px solid #ffffff4a;border-radius:50%;background:#ffffff12;color:#fff;font-size:26px;cursor:pointer;transition:background .2s}
+			.gallery-arrow:hover{background:#ffffff2b}
+			.gallery-thumbnails{display:flex;justify-content:center;gap:8px;padding:12px 18px 20px;overflow-x:auto}
+			.gallery-thumbnails button{flex:0 0 82px;width:82px;height:58px;padding:0;overflow:hidden;border:2px solid transparent;border-radius:4px;background:#333;opacity:.6;cursor:pointer}
+			.gallery-thumbnails button[aria-current=true]{border-color:#fff;opacity:1}
+			.gallery-thumbnails img{width:100%;height:100%;object-fit:cover}
+			.amenities-dialog{padding-bottom:18px}
+			.all-amenities{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px;margin:0;padding:6px 24px;list-style:none}
+			.all-amenities li{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--property-line)}
+			.all-amenities li>span:last-child{display:flex;flex-direction:column;gap:3px}
+			.all-amenities strong{font-size:13px}
+			.all-amenities small{color:var(--property-muted);font-size:11px}
+			.reserve-dialog{width:min(440px,calc(100% - 28px));padding-bottom:20px}
+			.reserve-confirmation{padding:26px 28px 10px;text-align:center}
+			.confirmation-mark{display:grid;place-items:center;width:46px;height:46px;margin:0 auto 16px;border-radius:50%;background:#e7f1e8;color:#34765a;font-size:23px}
+			.reserve-confirmation .eyebrow{margin-bottom:6px}
+			.reserve-confirmation h2{font-size:24px}
+			.confirm-dates{margin-top:16px;font-size:14px;font-weight:600}
+			.confirm-guests{margin-top:4px;color:var(--property-muted);font-size:12px}
+			.confirm-total{display:flex;justify-content:space-between;gap:10px;margin-top:20px;padding-top:14px;border-top:1px solid var(--property-line);font-size:13px}
+			.confirm-total strong{font-size:15px}
+			.demo-disclaimer{margin-top:17px;color:#77756d;font-size:11px;line-height:1.55}
+			.reserve-confirmation .reserve-button{margin-top:17px}
+			@media(max-width:900px){.property-header-inner,.property-main,.property-footer{width:min(100% - 36px,720px)}.property-nav{gap:16px}.property-layout{grid-template-columns:minmax(0,1fr) 320px;gap:28px}.photo-gallery{grid-template-rows:155px 155px}}
+			@media(max-width:700px){.property-header-inner,.property-main,.property-footer{width:calc(100% - 32px)}.property-header-inner{height:62px;gap:10px}.property-brand{flex-basis:122px;width:122px}.property-nav{display:none}.header-actions{margin-left:auto}.quiet-action{gap:5px;padding:7px 8px;font-size:12px}.property-heading{align-items:flex-start;padding:22px 0 15px}.heading-copy{flex:1}.property-heading h1{font-size:25px;line-height:1.16}.property-rating{flex-wrap:wrap;gap:6px;margin-top:10px;font-size:12px}.photos-button{min-height:36px;padding:0 10px;font-size:11px}.photo-gallery{display:block;height:auto;aspect-ratio:1.2/1;border-radius:7px}.photo-tile{position:absolute;inset:0;width:100%;height:100%}.photo-tile:not(:first-child){display:none}.photo-count{position:absolute;right:10px;bottom:10px;z-index:2;display:block;padding:5px 8px;border-radius:4px;background:#171812b8;color:#fff;font-size:10px;font-variant-numeric:tabular-nums}.photo-count span{padding:0 3px;color:#ffffffa0}.property-layout{display:block;padding:28px 0 24px}.booking-column{position:static;margin:6px 0 28px}.booking-card{padding:18px}.booking-assurance{display:none}.property-content{display:flex;flex-direction:column}.overview-section{order:0}.booking-column{order:1}.description-section{order:2}.amenities-section{order:3}.reviews-section{order:4}.location-section{order:5}.host-section{order:6}.content-section{padding-bottom:28px}.booking-column .booking-card{display:none}.mobile-reserve-bar{position:fixed;right:0;bottom:0;left:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 16px calc(11px + env(safe-area-inset-bottom));border-top:1px solid var(--property-line);background:#fffffff2;backdrop-filter:blur(12px)}.mobile-reserve-bar>div{display:flex;flex-direction:column;gap:1px}.mobile-reserve-bar strong{font-size:17px}.mobile-reserve-bar>div>span{color:var(--property-muted);font-size:11px}.mobile-reserve-bar button{min-width:132px;min-height:44px;padding:0 18px;border:0;border-radius:4px;background:var(--property-accent);color:#fff;font:inherit;font-size:14px;font-weight:700;cursor:pointer}.property-footer{padding-bottom:calc(84px + env(safe-area-inset-bottom));font-size:11px}.property-footer span{max-width:45%;text-align:right}.toast-message{right:12px;bottom:calc(76px + env(safe-area-inset-bottom))}.gallery-stage{grid-template-columns:36px minmax(0,1fr) 36px;gap:4px;padding:14px 8px}.gallery-stage figure img{height:55vh}.gallery-arrow{width:34px;height:34px;font-size:20px}.gallery-dialog{width:calc(100% - 16px)}.all-amenities{grid-template-columns:1fr}.review-heading h2{font-size:48px}}
+			@media(max-width:440px){.property-heading{display:block}.photos-button{margin-top:12px}.property-heading h1{font-size:23px}.property-rating{font-size:11px}.amenity-preview{grid-template-columns:1fr;gap:13px}.review-highlights{grid-template-columns:1fr}.review-highlight{border-right:0;border-bottom:1px solid var(--property-line)}.review-highlight:last-child{border-bottom:0}.location-visual{height:220px}.host-section h2{font-size:15px}.property-footer{align-items:flex-start;flex-direction:column}.property-footer span{max-width:none;text-align:left}}
+			@media(prefers-reduced-motion:reduce){.photo-tile img,.photos-button,.outline-button,.reserve-button,.toast-message,.property-search-submit,.property-search-item,.property-section-nav,.property-section-nav a{transition:none!important}}
+			@media(max-width:700px){.booking-column .reservation-card{display:none}.reservation-card{padding:18px}}
+			@media(max-width:900px){.property-header-inner{grid-template-columns:122px minmax(260px,1fr) 132px;gap:12px}.property-search{height:44px}.property-search-item{padding:0 9px}}
+			@media(max-width:700px){.property-page{--property-header-height:112px}.property-header-inner{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"brand actions" "search search";height:auto;min-height:112px;padding:8px 0;gap:8px 10px}.property-brand{grid-area:brand;flex-basis:122px;width:122px}.header-actions{grid-area:actions}.property-search{grid-area:search;justify-self:stretch;width:100%;height:44px}.property-search-item{padding:0 8px}.property-search-item>span{font-size:8px}.property-search-item strong{font-size:11px}.property-search-submit{flex-basis:34px;width:34px;height:34px;font-size:21px}.property-section-nav{gap:22px;min-height:50px;margin:0 calc((100% - 100vw)/2);padding:0 16px;overflow-x:auto}.property-section-nav a{min-height:50px;font-size:12px}}
+		</style>
