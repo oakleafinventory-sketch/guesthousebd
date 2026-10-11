@@ -1,0 +1,144 @@
+---
+import i18next from 'i18next';
+import { languages, resources } from '../i18n/locales.js';
+---
+
+<header class="guesthouse-listing-header">
+	<a class="guesthouse-listing-brand" href="/" aria-label="GuesthouseBD home">
+		<img src="/assets/logo/logo.png" data-theme-logo-light="/assets/logo/logo.png" data-theme-logo-dark="/assets/logo/logo-darkmode.png" alt="GuesthouseBD" />
+	</a>
+	<nav class="guesthouse-listing-nav" aria-label="Explore categories" data-i18n-aria-label="nav.explore">
+		<a href="/#top"><span aria-hidden="true">🌍</span><span data-i18n="nav.all">All</span></a>
+		<a class="is-active" href="/#stays" aria-current="page"><span aria-hidden="true">⌂</span><span data-i18n="nav.stays">Stays</span></a>
+		<a href="/#ride"><span aria-hidden="true">↗</span><span data-i18n="nav.ride">Pick &amp; drop</span></a>
+		<a href="/#people"><span aria-hidden="true">✦</span><span data-i18n="nav.guides">Guides</span></a>
+	</nav>
+	<div class="guesthouse-listing-actions">
+		<button class="theme-toggle" type="button" data-listing-theme-toggle aria-label="Switch to dark theme" title="Switch to dark theme"><span data-listing-theme-icon aria-hidden="true">☾</span></button>
+		<a class="host-link" href="/#join" data-i18n="nav.host">List your place</a>
+	</div>
+</header>
+
+<div class="language-picker listing-language-picker">
+	<button class="language-trigger" type="button" data-listing-language-trigger aria-haspopup="listbox" aria-expanded="false" aria-label="Choose language" data-i18n-aria-label="nav.language">
+		<svg class="language-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"></path></svg>
+		<span class="language-label" data-listing-language-label>English</span>
+	</button>
+	<ul class="language-menu" data-listing-language-menu role="listbox" aria-label="Select language" hidden>
+		{languages.map(({ code, label }) => <li><button class="lang-option" type="button" data-listing-language={code} role="option" aria-selected="false">{label}</button></li>)}
+	</ul>
+</div>
+
+<script>
+	import i18next from 'i18next';
+	import { languages as supportedLanguages, resources as languageResources } from '../i18n/locales.js';
+
+	const translate = i18next.createInstance();
+	function readPreference(key: string) {
+		try {
+			return localStorage.getItem(key);
+		} catch {
+			return null;
+		}
+	}
+
+	function savePreference(key: string, value: string) {
+		try {
+			localStorage.setItem(key, value);
+		} catch {
+			return;
+		}
+	}
+
+	const savedLanguage = readPreference('guesthouse-language');
+	const initialLanguage = supportedLanguages.find(({ code }) => code === savedLanguage)?.code ?? 'en';
+	const languageTrigger = document.querySelector<HTMLButtonElement>('[data-listing-language-trigger]')!;
+	const languageMenu = document.querySelector<HTMLUListElement>('[data-listing-language-menu]')!;
+	const languageLabel = document.querySelector<HTMLElement>('[data-listing-language-label]')!;
+	const themeToggle = document.querySelector<HTMLButtonElement>('[data-listing-theme-toggle]')!;
+	const themeIcon = document.querySelector<HTMLElement>('[data-listing-theme-icon]')!;
+
+	function applyListingLanguage(language: string) {
+		const selectedLanguage = supportedLanguages.find(({ code }) => code === language) ?? supportedLanguages[0];
+		document.documentElement.lang = selectedLanguage.htmlLang;
+		languageLabel.textContent = selectedLanguage.label;
+		document.querySelectorAll<HTMLElement>('[data-i18n]').forEach((element) => {
+			element.textContent = translate.t(element.dataset.i18n ?? '');
+		});
+		document.querySelectorAll<HTMLElement>('[data-i18n-aria-label]').forEach((element) => {
+			element.setAttribute('aria-label', translate.t(element.dataset.i18nAriaLabel ?? ''));
+		});
+		document.querySelectorAll<HTMLInputElement>('[data-i18n-placeholder]').forEach((element) => {
+			element.placeholder = translate.t(element.dataset.i18nPlaceholder ?? '');
+		});
+		document.querySelectorAll<HTMLButtonElement>('[data-listing-language]').forEach((option) => {
+			const selected = option.dataset.listingLanguage === selectedLanguage.code;
+			option.classList.toggle('is-selected', selected);
+			option.setAttribute('aria-selected', String(selected));
+		});
+		themeToggle.setAttribute('aria-label', translate.t(document.documentElement.dataset.theme === 'dark' ? 'nav.themeLight' : 'nav.themeDark'));
+		themeToggle.title = themeToggle.getAttribute('aria-label') ?? '';
+	}
+
+	function applyListingTheme(theme: string, persist = false) {
+		document.documentElement.dataset.theme = theme;
+		document.querySelectorAll<HTMLImageElement>('[data-theme-logo-light][data-theme-logo-dark]').forEach((logo) => {
+			logo.src = theme === 'dark' ? logo.dataset.themeLogoDark! : logo.dataset.themeLogoLight!;
+		});
+		themeIcon.textContent = theme === 'dark' ? '☀' : '☾';
+		themeToggle.setAttribute('aria-label', translate.t(theme === 'dark' ? 'nav.themeLight' : 'nav.themeDark'));
+		themeToggle.title = themeToggle.getAttribute('aria-label') ?? '';
+		if (persist) savePreference('guesthouse-theme', theme);
+	}
+
+	translate.init({ lng: initialLanguage, fallbackLng: 'en', resources: languageResources, interpolation: { escapeValue: false }, initImmediate: false });
+	translate.on('languageChanged', applyListingLanguage);
+	applyListingLanguage(initialLanguage);
+	const savedTheme = readPreference('guesthouse-theme');
+	applyListingTheme(savedTheme ?? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+
+	languageTrigger.addEventListener('click', () => {
+		const isExpanded = languageTrigger.getAttribute('aria-expanded') === 'true';
+		languageMenu.hidden = isExpanded;
+		languageTrigger.setAttribute('aria-expanded', String(!isExpanded));
+	});
+	languageMenu.addEventListener('click', (event) => {
+		if (!(event.target instanceof Element)) return;
+		const option = event.target.closest<HTMLButtonElement>('[data-listing-language]');
+		if (!option) return;
+		const language = option.dataset.listingLanguage!;
+		savePreference('guesthouse-language', language);
+		translate.changeLanguage(language);
+		languageMenu.hidden = true;
+		languageTrigger.setAttribute('aria-expanded', 'false');
+	});
+	document.addEventListener('click', (event) => {
+		if (event.composedPath().includes(languageTrigger) || event.composedPath().includes(languageMenu)) return;
+		languageMenu.hidden = true;
+		languageTrigger.setAttribute('aria-expanded', 'false');
+	});
+	document.addEventListener('keydown', (event) => {
+		if (event.key !== 'Escape' || languageMenu.hidden) return;
+		languageMenu.hidden = true;
+		languageTrigger.setAttribute('aria-expanded', 'false');
+		languageTrigger.focus();
+	});
+	themeToggle.addEventListener('click', () => {
+		const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+		applyListingTheme(nextTheme, true);
+		applyListingLanguage(translate.language);
+	});
+</script>
+
+<style>
+	.guesthouse-listing-header{display:grid;grid-template-columns:minmax(120px,1fr) auto minmax(120px,1fr);align-items:center;gap:20px;min-height:72px;border-bottom:1px solid var(--border)}
+	.guesthouse-listing-brand{display:block;width:138px;line-height:0}
+	.guesthouse-listing-brand img{width:100%;height:auto;background:transparent;object-fit:contain}
+	.guesthouse-listing-nav{display:flex;align-self:stretch;align-items:stretch;gap:clamp(8px,2vw,24px)}
+	.guesthouse-listing-nav a{display:flex;min-width:64px;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:5px 8px;border-bottom:2px solid transparent;color:var(--header-muted);font-size:12px}
+	.guesthouse-listing-nav a span:first-child{color:var(--header-ink);font-size:19px;line-height:1}
+	.guesthouse-listing-nav a.is-active{border-color:var(--brand);color:var(--header-ink)}
+	.guesthouse-listing-actions{display:flex;align-items:center;justify-content:flex-end;gap:14px}
+	@media(max-width:760px){.guesthouse-listing-header{grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;padding:8px 0}.guesthouse-listing-brand{width:122px}.guesthouse-listing-nav{grid-column:1/-1;grid-row:2;justify-content:space-around;gap:2px}.guesthouse-listing-nav a{flex:1;min-width:0;padding:6px 3px;font-size:11px;text-align:center;overflow-wrap:anywhere}.guesthouse-listing-nav a span:first-child{font-size:17px}.guesthouse-listing-actions{grid-column:2;grid-row:1}.guesthouse-listing-actions .host-link{display:none}}
+	@media(max-width:390px){.guesthouse-listing-brand{width:106px}.guesthouse-listing-actions{gap:8px}.guesthouse-listing-actions .theme-toggle{width:36px;height:36px}}
+</style>

@@ -171,7 +171,7 @@ const formatMoney = (amount: number) => new Intl.NumberFormat('en-US', { style: 
 		<style>
 			:global(body){padding:0;background:#fff;color:#20201e;font-family:'Instrument Sans',sans-serif}
 			:global(html){scroll-padding-top:140px}
-			.property-page{--property-ink:#20201e;--property-muted:#706f69;--property-line:#e8e7e1;--property-paper:#fff;--property-soft:#f5f5ef;--property-accent:#e6183d;--property-header-height:72px;min-height:100vh;padding-bottom:40px;background:var(--property-paper);color:var(--property-ink)}
+			.property-page{--property-ink:#20201e;--property-muted:#706f69;--property-line:#e8e7e1;--property-paper:#fff;--property-soft:#f5f5ef;--property-accent:#e6183d;--property-header-height:72px;min-height:100vh;overflow-x:clip;padding-bottom:40px;background:var(--property-paper);color:var(--property-ink)}
 			.property-header{position:sticky;top:0;z-index:20;border-bottom:1px solid var(--property-line);background:#fffffff2;backdrop-filter:blur(14px)}
 			.property-header-inner{display:grid;grid-template-columns:142px minmax(280px,440px) minmax(220px,auto);align-items:center;justify-content:space-between;gap:24px;width:min(1280px,calc(100% - 48px));height:72px;margin:0 auto}
 			.property-brand{display:block;flex:0 0 142px;width:142px;line-height:0}

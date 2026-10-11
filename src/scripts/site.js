@@ -1,6 +1,9 @@
 import i18next from 'i18next';
 import { animate } from 'motion';
 import { languages, resources } from '../i18n/locales.js';
+import { loadHomeContent } from '../data/content-client';
+
+const homeData = await loadHomeContent();
 
 function getSavedLanguage() {
 	try {
@@ -209,10 +212,10 @@ function updateSearchSummary() {
 }
 
 function renderSuggestions(filter = '') {
-	const destinations = [
-		{ value: '', label: t('search.anywhere') },
-		...['Goa', 'Kerala', 'Calangute', 'Wayanad', 'Bali'].map((place) => ({ value: place, label: place })),
-	];
+	const destinations = homeData.searchDestinations.map(({ value, label, labelKey }) => ({
+		value,
+		label: labelKey ? t(labelKey) : label,
+	}));
 	const normalizedFilter = filter.trim().toLocaleLowerCase(localeInfo().intl);
 	const matching = destinations.filter((place) => `${place.value} ${place.label}`.toLocaleLowerCase(localeInfo().intl).includes(normalizedFilter));
 	if (filter.trim() && !matching.some((place) => place.label.toLocaleLowerCase(localeInfo().intl) === normalizedFilter)) matching.unshift({ value: filter.trim(), label: filter.trim() });
@@ -425,12 +428,7 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObse
 	document.querySelectorAll('.panel:not(#top), footer').forEach((section) => revealObserver.observe(section));
 }
 
-const destinations = [
-	['/assets/area/chittagong.jpg', 'Chittagong', 'Hill valley in Chittagong', '/assets/animation/areas/chittagong.mp4'],
-	['/assets/area/coxbazar.jpg', "Cox's Bazar", "Beach in Cox's Bazar", '/assets/animation/areas/coxbazar.mp4'],
-	['/assets/area/Dhaka.jpg', 'Dhaka', 'Dhaka city skyline at night', '/assets/animation/areas/dhaka.mp4', '/guestHouses/dhaka/'],
-	['/assets/area/sylhet.jpg', 'Sylhet', 'Lake and green hills in Sylhet', '/assets/animation/areas/sylhet.mp4'],
-];
+const destinations = homeData.areaDestinations;
 arches.innerHTML = destinations.map(([image, name, alt, video, href]) => {
 	const content = `<img src="${image}" alt="${alt}"><video class="area-video" muted playsinline loop preload="none" aria-hidden="true"><source src="${video}" type="video/mp4"></video><span class="area-name">${name}</span>`;
 	return href
@@ -452,14 +450,7 @@ arches.querySelectorAll('.area-card').forEach((card) => {
 	card.addEventListener('focusin', playVideo);
 	card.addEventListener('focusout', stopVideo);
 });
-const homes = [
-	['photo-1564013799919-ab600027ffc6', 'homes.kerala', 120, 'Kerala'],
-	['photo-1582719478250-c89cae4dc85b', 'homes.calangute', 85, 'Calangute'],
-	['photo-1618773928121-c32242e63f39', 'homes.wayanad', 64, 'Wayanad'],
-	['photo-1512917774080-9991f1c4c750', 'homes.bali', 210, 'Bali'],
-	['photo-1566073771259-6a8506099945', 'homes.poolGoa', 160, 'Goa'],
-	['photo-1520250497591-112f2f40a3f4', 'homes.resortGoa', 240, 'Goa'],
-];
+const homes = homeData.stays;
 let current = 2;
 let cards = [];
 function placeCards() {
@@ -488,23 +479,8 @@ byId('prev').addEventListener('click', () => { current = (current - 1 + cards.le
 addEventListener('resize', placeCards);
 placeCards();
 
-const featureKeys = [
-	['services.rideTitle', 'services.rideDescription', 'photo-1469854523086-cc02fe5d8800'],
-	['services.assistantTitle', 'services.assistantDescription', 'photo-1488646953014-85cb44e25828'],
-	['services.guideTitle', 'services.guideDescription', 'photo-1476514525535-07fb3b4ae5f1'],
-];
-const rideOptions = [
-	{ id: 'camaro-ss', brand: 'Chevrolet', model: 'Camaro SS', image: 'photo-1492144534655-ae79c964c9d7', seats: 4, bags: 2, rate: 22, idealKey: 'services.rideCity' },
-	{ id: 'porsche-911', brand: 'Porsche', model: '911 Carrera', image: 'photo-1503376780353-7e6692767b70', seats: 2, bags: 2, rate: 48, idealKey: 'services.rideAirport' },
-	{ id: 'camaro-zl1', brand: 'Chevrolet', model: 'Camaro ZL1', image: 'photo-1552519507-da3b142c6e3d', seats: 4, bags: 2, rate: 26, idealKey: 'services.rideCity' },
-	{ id: 'mustang-gt', brand: 'Ford', model: 'Mustang GT', image: 'photo-1494976388531-d1058494cdd8', seats: 4, bags: 2, rate: 32, idealKey: 'services.rideFamily' },
-	{ id: 'bmw-m4', brand: 'BMW', model: 'M4 Competition', image: 'photo-1511919884226-fd3cad34687c', seats: 4, bags: 2, rate: 38, idealKey: 'services.rideBusiness' },
-	{ id: 'range-rover', brand: 'Land Rover', model: 'Range Rover Sport', image: 'photo-1519641471654-76ce0107ad1b', seats: 5, bags: 4, rate: 45, idealKey: 'services.rideFamily' },
-	{ id: 'mercedes-amg', brand: 'Mercedes-Benz', model: 'AMG GT', image: 'photo-1544829099-b9a0c07fad1a', seats: 2, bags: 2, rate: 52, idealKey: 'services.rideBusiness' },
-	{ id: 'toyota-prado', brand: 'Toyota', model: 'Land Cruiser Prado', image: 'photo-1503736334956-4c8f8e92946d', seats: 7, bags: 5, rate: 36, idealKey: 'services.rideGroup' },
-	{ id: 'audi-r8', brand: 'Audi', model: 'R8 V10', image: 'photo-1549317661-bd32c8ce0db2', seats: 2, bags: 2, rate: 55, idealKey: 'services.rideBusiness' },
-	{ id: 'bmw-x5', brand: 'BMW', model: 'X5 xDrive', image: 'photo-1504215680853-026ed2a45def', seats: 5, bags: 4, rate: 42, idealKey: 'services.rideAirport' },
-];
+const featureKeys = homeData.serviceFeatures;
+const rideOptions = homeData.vehicles;
 let selectedVehicleId = '';
 let vehicleOptionsExpanded = false;
 
@@ -596,20 +572,7 @@ function renderFeatureRows() {
 	if (openRideRow) animateVehicleCards(openRideRow);
 }
 
-const people = {
-	a: [
-		{ name: 'Aarav', gender: 'm', age: 32, rating: 4.9, price: 30, image: 'photo-1507003211169-0a1dd7228f2d' },
-		{ name: 'Meera', gender: 'f', age: 29, rating: 4.8, price: 38, image: 'photo-1494790108377-be9c29b29330' },
-		{ name: 'Kabir', gender: 'm', age: 36, rating: 4.7, price: 45, image: 'photo-1500648767791-00dcc994a43e' },
-		{ name: 'Isha', gender: 'f', age: 27, rating: 4.6, price: 50, image: 'photo-1438761681033-6461ffad8d80' },
-	],
-	g: [
-		{ name: 'Rohan', gender: 'm', age: 34, rating: 4.9, price: 35, image: 'photo-1500648767791-00dcc994a43e' },
-		{ name: 'Anaya', gender: 'f', age: 28, rating: 4.8, price: 42, image: 'photo-1438761681033-6461ffad8d80' },
-		{ name: 'Vikram', gender: 'm', age: 41, rating: 4.7, price: 48, image: 'photo-1507003211169-0a1dd7228f2d' },
-		{ name: 'Diya', gender: 'f', age: 26, rating: 4.5, price: 55, image: 'photo-1494790108377-be9c29b29330' },
-	],
-};
+const people = homeData.people;
 function applyPeopleFilter(kind) {
 	const grid = byId(`g${kind}`);
 	const toggle = query(`.tog[data-t=${kind}]`);
@@ -705,13 +668,7 @@ if (peopleFilterDialog) {
 	});
 }
 
-const paymentMethods = [
-	['payments.card', 'payments.cardDescription', 'atmcard.png'],
-	['payments.bkash', 'payments.bkashDescription', 'bkash.png'],
-	['payments.googlePay', 'payments.googlePayDescription', 'gpay.png'],
-	['payments.applePay', 'payments.applePayDescription', 'applepay.png'],
-	['payments.arrival', 'payments.arrivalDescription', 'cash.png'],
-];
+const paymentMethods = homeData.paymentMethods;
 function renderPaymentOptions() {
 	const activeIndex = [...paymentList.children].findIndex((item) => item.getAttribute('aria-pressed') === 'true');
 	paymentList.innerHTML = paymentMethods.map(([nameKey, descriptionKey, icon], index) => `<button class="pm" aria-pressed="${index === (activeIndex < 0 ? 0 : activeIndex)}"><div class="ic"><img src="/assets/icons/payment/${icon}" alt="" aria-hidden="true"></div><b>${t(nameKey)}</b><span>${t(descriptionKey)}</span></button>`).join('');
@@ -721,7 +678,7 @@ paymentList.addEventListener('click', (event) => {
 	const button = event.target.closest('.pm');
 	if (button) [...paymentList.children].forEach((item) => item.setAttribute('aria-pressed', item === button));
 });
-socialList.innerHTML = [['WhatsApp', 'WA'], ['Google', 'G'], ['Facebook', 'f'], ['Telegram', 'T']].map(([name, icon]) => `<button><span class="ic">${icon}</span>${name}</button>`).join('');
+socialList.innerHTML = homeData.socialProviders.map(([name, icon]) => `<button><span class="ic">${icon}</span>${name}</button>`).join('');
 
 addEventListener('scroll', () => {
 	const position = frameImage.parentElement.getBoundingClientRect();

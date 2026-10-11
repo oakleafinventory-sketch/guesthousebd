@@ -1,0 +1,42 @@
+[
+  {
+    "id": "wifi",
+    "label": "Wi-Fi",
+    "amenityPattern": "wi-fi"
+  },
+  {
+    "id": "washer",
+    "label": "Washer",
+    "amenityPattern": "washer"
+  },
+  {
+    "id": "parking",
+    "label": "Free parking",
+    "amenityPattern": "free parking"
+  },
+  {
+    "id": "tv",
+    "label": "TV",
+    "amenityPattern": "\\btv\\b"
+  },
+  {
+    "id": "air-conditioning",
+    "label": "Air conditioning",
+    "amenityPattern": "air conditioning"
+  },
+  {
+    "id": "self-check-in",
+    "label": "Self check-in",
+    "amenityPattern": "self check-in"
+  },
+  {
+    "id": "bathrooms",
+    "label": "1+ bathrooms",
+    "bathroomsAtLeast": 1
+  },
+  {
+    "id": "kitchen",
+    "label": "Kitchen",
+    "amenityPattern": "kitchen"
+  }
+]

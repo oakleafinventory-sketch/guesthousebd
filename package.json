@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "astro": "^7.3.6",
+    "google-maps": "^4.3.3",
     "i18next": "^26.4.2",
     "motion": "^14.0.0"
   },

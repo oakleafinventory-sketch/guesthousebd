@@ -1,3 +1,7 @@
+---
+import languages from '../i18n/languages.json';
+---
+
 <div class="site-header" id="site-header">
 	<div class="primary-nav">
 		<a class="brand" href="#top" aria-label="GuesthouseBD home"><img src="/assets/logo/logo.png" data-theme-logo-light="/assets/logo/logo.png" data-theme-logo-dark="/assets/logo/logo-darkmode.png" alt="GuesthouseBD" /></a>
@@ -74,22 +78,10 @@
 		<span class="language-label" id="language-label">English</span>
 	</button>
 	<ul class="language-menu" id="language-menu" role="listbox" aria-label="Select language" hidden>
-		<li><button class="lang-option is-selected" type="button" data-lang="en" role="option" aria-selected="true">English</button></li>
-		<li><button class="lang-option" type="button" data-lang="bn" role="option" aria-selected="false">বাংলা</button></li>
-		<li><button class="lang-option" type="button" data-lang="zh" role="option" aria-selected="false">中文</button></li>
-		<li><button class="lang-option" type="button" data-lang="ru" role="option" aria-selected="false">Русский</button></li>
-		<li><button class="lang-option" type="button" data-lang="it" role="option" aria-selected="false">Italiano</button></li>
-		<li><button class="lang-option" type="button" data-lang="fr" role="option" aria-selected="false">Français</button></li>
-		<li><button class="lang-option" type="button" data-lang="hi" role="option" aria-selected="false">हिन्दी</button></li>
+		{languages.map(({ code, label }, index) => <li><button class:list={['lang-option', index === 0 && 'is-selected']} type="button" data-lang={code} role="option" aria-selected={index === 0 ? 'true' : 'false'}>{label}</button></li>)}
 	</ul>
 	<select id="language-select" class="sr-only" aria-label="Choose language">
-		<option value="en">English</option>
-		<option value="bn">বাংলা</option>
-		<option value="zh">中文</option>
-		<option value="ru">Русский</option>
-		<option value="it">Italiano</option>
-		<option value="fr">Français</option>
-		<option value="hi">हिन्दी</option>
+		{languages.map(({ code, label }) => <option value={code}>{label}</option>)}
 	</select>
 </div>
 

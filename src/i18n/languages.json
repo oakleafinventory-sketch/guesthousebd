@@ -1,0 +1,51 @@
+[
+  {
+    "code": "en",
+    "label": "English",
+    "htmlLang": "en",
+    "intl": "en-US",
+    "currency": "USD"
+  },
+  {
+    "code": "bn",
+    "label": "বাংলা",
+    "htmlLang": "bn",
+    "intl": "bn-BD",
+    "currency": "BDT"
+  },
+  {
+    "code": "zh",
+    "label": "中文",
+    "htmlLang": "zh-Hans",
+    "intl": "zh-CN",
+    "currency": "CNY"
+  },
+  {
+    "code": "ru",
+    "label": "Русский",
+    "htmlLang": "ru",
+    "intl": "ru-RU",
+    "currency": "RUB"
+  },
+  {
+    "code": "it",
+    "label": "Italiano",
+    "htmlLang": "it",
+    "intl": "it-IT",
+    "currency": "EUR"
+  },
+  {
+    "code": "fr",
+    "label": "Français",
+    "htmlLang": "fr",
+    "intl": "fr-FR",
+    "currency": "EUR"
+  },
+  {
+    "code": "hi",
+    "label": "हिन्दी",
+    "htmlLang": "hi",
+    "intl": "hi-IN",
+    "currency": "INR"
+  }
+]
