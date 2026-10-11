@@ -659,6 +659,52 @@ document.querySelectorAll('.tog').forEach((toggle) => toggle.addEventListener('c
 	applyPeopleFilter(toggle.dataset.t);
 }));
 
+const peopleFilterDialog = document.getElementById('people-filter-dialog');
+if (peopleFilterDialog) {
+	const mobileFilterInputs = [...peopleFilterDialog.querySelectorAll('[data-mobile-filter]')];
+	const updateMobileFilterLabels = () => {
+		const price = Number(peopleFilterDialog.querySelector('[data-mobile-filter="price"]').value);
+		const age = Number(peopleFilterDialog.querySelector('[data-mobile-filter="age"]').value);
+		const rating = Number(peopleFilterDialog.querySelector('[data-mobile-filter="rating"]').value);
+		peopleFilterDialog.querySelector('[data-mobile-filter-value="price"]').textContent = `Up to ${formatCurrencyBreakdown(price)} / day`;
+		peopleFilterDialog.querySelector('[data-mobile-filter-value="age"]').textContent = `Up to ${age}`;
+		peopleFilterDialog.querySelector('[data-mobile-filter-value="rating"]').textContent = `${rating.toFixed(1)}+`;
+	};
+
+	document.querySelectorAll('[data-open-people-filter]').forEach((button) => button.addEventListener('click', () => {
+		const kind = button.dataset.openPeopleFilter;
+		const panel = document.querySelector(`.filter-panel[data-filter-kind="${kind}"]`);
+		if (!panel) return;
+		peopleFilterDialog.dataset.filterKind = kind;
+		peopleFilterDialog.querySelector('[data-people-filter-title]').textContent = t(kind === 'a' ? 'people.assistants' : 'people.guides');
+		mobileFilterInputs.forEach((input) => {
+			input.value = panel.querySelector(`#${input.dataset.mobileFilter}-${kind}`).value;
+		});
+		updateMobileFilterLabels();
+		peopleFilterDialog.showModal();
+	}));
+
+	mobileFilterInputs.forEach((input) => input.addEventListener('input', updateMobileFilterLabels));
+	peopleFilterDialog.querySelector('[data-close-people-filter]').addEventListener('click', () => peopleFilterDialog.close());
+	peopleFilterDialog.querySelector('[data-apply-people-filter]').addEventListener('click', () => {
+		const kind = peopleFilterDialog.dataset.filterKind;
+		const panel = document.querySelector(`.filter-panel[data-filter-kind="${kind}"]`);
+		if (!panel) return;
+		mobileFilterInputs.forEach((input) => {
+			panel.querySelector(`#${input.dataset.mobileFilter}-${kind}`).value = input.value;
+		});
+		applyPeopleFilter(kind);
+		peopleFilterDialog.close();
+	});
+	peopleFilterDialog.querySelector('[data-reset-people-filter]').addEventListener('click', () => {
+		mobileFilterInputs.forEach((input) => { input.value = input.defaultValue; });
+		updateMobileFilterLabels();
+	});
+	peopleFilterDialog.addEventListener('click', (event) => {
+		if (event.target === peopleFilterDialog) peopleFilterDialog.close();
+	});
+}
+
 const paymentMethods = [
 	['payments.card', 'payments.cardDescription', 'atmcard.png'],
 	['payments.bkash', 'payments.bkashDescription', 'bkash.png'],

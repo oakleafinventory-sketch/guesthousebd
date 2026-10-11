@@ -1,7 +1,12 @@
 <section class="panel" id="people">
 	<div class="top">
 		<h2 data-i18n="people.assistants">Tour assistants</h2>
-		<div class="tog" data-t="a"></div>
+		<div class="people-controls">
+			<div class="tog" data-t="a"></div>
+			<button class="mobile-filter-button" type="button" data-open-people-filter="a" aria-haspopup="dialog" aria-controls="people-filter-dialog" aria-label="Open tour assistant filters">
+				<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M7 12h10m-7 5h4"/><circle cx="8" cy="7" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="12" cy="17" r="1.5"/></svg>
+			</button>
+		</div>
 	</div>
 	<div class="people-layout">
 		<div class="grid" id="ga"></div>
@@ -28,7 +33,12 @@
 	</div>
 	<div class="top" style="margin-top: 64px">
 		<h2 data-i18n="people.guides">Travel guides</h2>
-		<div class="tog" data-t="g"></div>
+		<div class="people-controls">
+			<div class="tog" data-t="g"></div>
+			<button class="mobile-filter-button" type="button" data-open-people-filter="g" aria-haspopup="dialog" aria-controls="people-filter-dialog" aria-label="Open travel guide filters">
+				<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M7 12h10m-7 5h4"/><circle cx="8" cy="7" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="12" cy="17" r="1.5"/></svg>
+			</button>
+		</div>
 	</div>
 	<div class="people-layout">
 		<div class="grid" id="gg"></div>
@@ -53,4 +63,31 @@
 			</div>
 		</aside>
 	</div>
+	<dialog class="people-filter-dialog" id="people-filter-dialog" aria-labelledby="people-filter-title">
+		<div class="people-filter-heading">
+			<h3 id="people-filter-title" data-people-filter-title>Filters</h3>
+			<button class="people-filter-close" type="button" data-close-people-filter aria-label="Close filters">×</button>
+		</div>
+		<div class="filter-list">
+			<div class="filter-item">
+				<label for="mobile-price-filter">Price range</label>
+				<div class="filter-value" data-mobile-filter-value="price"></div>
+				<input id="mobile-price-filter" type="range" min="30" max="120" step="5" value="90" data-mobile-filter="price" />
+			</div>
+			<div class="filter-item">
+				<label for="mobile-age-filter">Age range</label>
+				<div class="filter-value" data-mobile-filter-value="age"></div>
+				<input id="mobile-age-filter" type="range" min="18" max="60" step="1" value="50" data-mobile-filter="age" />
+			</div>
+			<div class="filter-item">
+				<label for="mobile-rating-filter">Rating</label>
+				<div class="filter-value" data-mobile-filter-value="rating"></div>
+				<input id="mobile-rating-filter" type="range" min="3.5" max="5" step="0.5" value="4.5" data-mobile-filter="rating" />
+			</div>
+		</div>
+		<div class="people-filter-actions">
+			<button type="button" data-reset-people-filter>Reset</button>
+			<button type="button" data-apply-people-filter>Show results</button>
+		</div>
+	</dialog>
 </section>
