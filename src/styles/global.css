@@ -275,3 +275,29 @@ body.motion-ready .panel:not(#top).is-visible,body.motion-ready footer.is-visibl
 @media(max-width:430px){.brand{width:108px;flex-basis:108px}.nav-actions{min-width:0;gap:6px}.language-trigger{width:104px;padding:0 7px;gap:5px}.language-symbol{width:26px;height:26px}.language-label{font-size:12px}.theme-toggle{width:32px;height:32px;font-size:16px}.menu-button{gap:6px;padding:5px 6px}}
 @media(max-width:360px){.brand{width:96px;flex-basis:96px}.theme-toggle{display:none}}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-delay:0s!important;transition:none!important;scroll-behavior:auto!important}body.motion-ready .panel:not(#top),body.motion-ready footer{opacity:1;transform:none}.arches div{transform:none}}
+@media(max-width:700px){.menu-button,.nav2 button,.theme-toggle,.language-trigger,.stepper button{min-width:44px;min-height:44px}.search-submit{width:44px;min-width:44px;height:44px}}
+@media(max-width:480px){
+	body{padding:8px}
+	.site-header{margin:-8px -8px 8px;padding-right:12px;padding-left:12px}
+	.panel:not(.cta):not(.step){padding:20px;border-radius:20px;margin-bottom:8px}
+	.fan{height:340px;overflow:clip}
+	.card{width:min(200px,calc(100vw - 56px))}
+	.card img{height:200px}
+	.step{height:auto;min-height:520px;padding:32px 20px;grid-template-columns:minmax(0,1fr);align-content:center;justify-items:start;gap:18px}
+	.step .t{position:relative;top:auto;left:auto;transform:none}
+	.step .frame{width:min(250px,100%);margin:0 auto}
+	.step .frame img{height:clamp(220px,70vw,280px)}
+	.join{grid-template-columns:minmax(0,1fr);gap:28px}
+	.join>*{min-width:0}
+	.join img{height:auto;aspect-ratio:1/1;max-width:100%}
+	.sso{grid-template-columns:repeat(2,minmax(0,1fr))}
+	.sso button{min-width:0;overflow-wrap:anywhere}
+	.field{width:100%;min-width:0;padding-left:14px}
+	.field button{flex:0 0 auto;padding-right:14px;padding-left:14px}
+	footer{gap:24px;padding:28px 20px 20px}
+	footer>*{min-width:0}
+	footer .field{max-width:100%}
+	.footer-logo{max-width:100%}
+	.cta{border-radius:20px 20px 0 0}
+}
+@media(max-width:430px){.theme-toggle{width:44px;height:44px}.language-trigger{height:44px}}
