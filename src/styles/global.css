@@ -271,7 +271,8 @@ section[id]{scroll-margin-top:150px}
 .sso button:hover{background:var(--sky)}
 .sso .ic{width:30px;height:30px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px}
 .field{display:flex;gap:8px;background:var(--surface);border-radius:99px;padding:6px 6px 6px 18px;margin-top:8px}
-footer{background:var(--footer-surface);color:var(--footer-ink);border-radius:0 0 var(--r) var(--r);padding:40px clamp(24px,5vw,64px) 24px;display:flex;flex-wrap:wrap;gap:32px;justify-content:space-between;margin-bottom:12px}
+footer{background:var(--footer-surface);color:var(--footer-ink);border-radius:var(--r);padding:40px clamp(24px,5vw,64px) 24px;display:flex;flex-wrap:wrap;gap:32px;justify-content:space-between;margin-bottom:12px}
+.cta+footer,.cta+.site-footer{border-radius:0 0 var(--r) var(--r)}
 .field input{flex:1;border:0;outline:0;background:none;min-width:0}
 .field button{border:0;border-radius:99px;background:var(--ink);color:#fff;padding:10px 20px;cursor:pointer}
 .join img{border-radius:999px 999px 24px 24px;height:420px;width:100%}

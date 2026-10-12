@@ -1,34 +1,65 @@
 ---
-import '../../../styles/global.css';
-import { getPropertyPath, properties } from '../../../data/property-details';
-import amenityFilters from '../../../data/amenity-filters.json';
-import GuesthouseListingHeader from '../../../components/GuesthouseListingHeader.astro';
-import SiteFooter from '../../../components/SiteFooter.astro';
+import "../../../styles/global.css";
+import { getPropertyPath, properties } from "../../../data/property-details";
+import amenityFilters from "../../../data/amenity-filters.json";
+import GuesthouseListingHeader from "../../../components/GuesthouseListingHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
 
-const stays = properties.filter((property) => property.city === 'Dhaka');
-function matchesAmenity(stay: (typeof stays)[number], filter: (typeof amenityFilters)[number]) {
-	if (filter.bathroomsAtLeast !== undefined) return (stay.details?.bathrooms ?? 0) >= filter.bathroomsAtLeast;
+const stays = properties.filter((property) => property.city === "Dhaka");
+function matchesAmenity(
+	stay: (typeof stays)[number],
+	filter: (typeof amenityFilters)[number],
+) {
+	if (filter.bathroomsAtLeast !== undefined)
+		return (stay.details?.bathrooms ?? 0) >= filter.bathroomsAtLeast;
 	if (!filter.amenityPattern) return false;
-	const pattern = new RegExp(filter.amenityPattern, 'i');
-	return stay.details?.amenities.some(({ name }) => pattern.test(name)) ?? false;
+	const pattern = new RegExp(filter.amenityPattern, "i");
+	return (
+		stay.details?.amenities.some(({ name }) => pattern.test(name)) ?? false
+	);
 }
-const availableAmenities = amenityFilters.filter((filter) => stays.some((stay) => matchesAmenity(stay, filter)));
+const availableAmenities = amenityFilters.filter((filter) =>
+	stays.some((stay) => matchesAmenity(stay, filter)),
+);
 const favoriteStays = [...stays]
-	.sort((a, b) => (b.reviewCount * Number(b.rating)) - (a.reviewCount * Number(a.rating))
-		|| Number(b.rating) - Number(a.rating))
+	.sort(
+		(a, b) =>
+			b.reviewCount * Number(b.rating) -
+				a.reviewCount * Number(a.rating) ||
+			Number(b.rating) - Number(a.rating),
+	)
 	.slice(0, Math.min(3, stays.length));
 const favoriteSlugs = new Set(favoriteStays.map(({ slug }) => slug));
-const areaGroups = [...stays.filter(({ slug }) => !favoriteSlugs.has(slug)).reduce((groups, stay) => {
-	const group = groups.get(stay.area) ?? [];
-	group.push(stay);
-	groups.set(stay.area, group);
-	return groups;
-}, new Map<string, typeof stays>())].map(([area, listings]) => ({ area, listings }));
+const areaGroups = [
+	...stays
+		.filter(({ slug }) => !favoriteSlugs.has(slug))
+		.reduce((groups, stay) => {
+			const group = groups.get(stay.area) ?? [];
+			group.push(stay);
+			groups.set(stay.area, group);
+			return groups;
+		}, new Map<string, typeof stays>()),
+].map(([area, listings]) => ({ area, listings }));
 const resultGroups = [
-	{ title: 'Guest favorites', description: 'Ranked by guest review volume and ratings.', listings: favoriteStays, isFeatured: true },
-	...areaGroups.map(({ area, listings }) => ({ title: `Stays near ${area}`, description: '', listings, isFeatured: false })),
+	{
+		title: "Guest favorites",
+		description: "Ranked by guest review volume and ratings.",
+		listings: favoriteStays,
+		isFeatured: true,
+	},
+	...areaGroups.map(({ area, listings }) => ({
+		title: `Stays near ${area}`,
+		description: "",
+		listings,
+		isFeatured: false,
+	})),
 ];
-const formatMoney = (amount: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
+const formatMoney = (amount: number) =>
+	new Intl.NumberFormat("en-US", {
+		style: "currency",
+		currency: "USD",
+		maximumFractionDigits: 0,
+	}).format(amount);
 ---
 
 <!doctype html>
@@ -39,229 +70,923 @@ const formatMoney = (amount: number) => new Intl.NumberFormat('en-US', { style: 
 		<title>Guesthouses in Dhaka — GuesthouseBD</title>
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap" rel="stylesheet" />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
+			rel="stylesheet"
+		/>
 	</head>
 	<body>
 		<div class="dhaka-page">
 			<GuesthouseListingHeader />
 			<main>
-				<section class="results-heading" aria-labelledby="results-title">
+				<section
+					class="results-heading"
+					aria-labelledby="results-title"
+				>
 					<div>
-						<p class="results-location">Dhaka <span aria-hidden="true">/</span> Bangladesh</p>
+						<p class="results-location">
+							Dhaka <span aria-hidden="true">/</span> Bangladesh
+						</p>
 						<h1 id="results-title">Based on your Dhaka search</h1>
-						<p class="results-summary">6 guesthouses <span aria-hidden="true">·</span> 4 nights <span aria-hidden="true">·</span> 1 guest</p>
+						<p class="results-summary">
+							6 guesthouses <span aria-hidden="true">·</span> 4 nights
+							<span aria-hidden="true">·</span> 1 guest
+						</p>
 					</div>
-					<a class="search-again" href="/#site-header" aria-label="Change your search">Change search <span aria-hidden="true">↗</span></a>
+					<a
+						class="search-again"
+						href="/#site-header"
+						aria-label="Change your search"
+						>Change search <span aria-hidden="true">↗</span></a
+					>
 				</section>
-				<section class="amenity-toolbar" aria-label="Filter guesthouses by amenities">
-					<button class="all-filters-button" type="button" data-open-amenity-filters aria-haspopup="dialog" aria-controls="amenity-filter-dialog">
-						<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M7 12h10m-7 5h4"/><circle cx="8" cy="7" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="12" cy="17" r="1.5"/></svg>
-						<span>Filters</span><span class="active-filter-count" data-active-filter-count hidden>0</span>
+				<section
+					class="amenity-toolbar"
+					aria-label="Filter guesthouses by amenities"
+				>
+					<button
+						class="all-filters-button"
+						type="button"
+						data-open-amenity-filters
+						aria-haspopup="dialog"
+						aria-controls="amenity-filter-dialog"
+					>
+						<svg aria-hidden="true" viewBox="0 0 24 24"
+							><path d="M4 7h16M7 12h10m-7 5h4"></path><circle
+								cx="8"
+								cy="7"
+								r="1.5"></circle><circle cx="15" cy="12" r="1.5"
+							></circle><circle cx="12" cy="17" r="1.5"
+							></circle></svg
+						>
+						<span>Filters</span><span
+							class="active-filter-count"
+							data-active-filter-count
+							hidden>0</span
+						>
 					</button>
-					<div class="amenity-chips" aria-label="Quick amenity filters">
-						{availableAmenities.map(({ id, label }) => <button class="amenity-chip" type="button" data-amenity-chip={id} aria-pressed="false">{label}</button>)}
+					<div
+						class="amenity-chips"
+						aria-label="Quick amenity filters"
+					>
+						{
+							availableAmenities.map(({ id, label }) => (
+								<button
+									class="amenity-chip"
+									type="button"
+									data-amenity-chip={id}
+									aria-pressed="false"
+								>
+									{label}
+								</button>
+							))
+						}
 					</div>
-					<button class="clear-filters" type="button" data-clear-amenity-filters hidden>Clear</button>
+					<button
+						class="clear-filters"
+						type="button"
+						data-clear-amenity-filters
+						hidden>Clear</button
+					>
 				</section>
-				<p class="filter-results-status" aria-live="polite" data-filter-results-status hidden></p>
+				<p
+					class="filter-results-status"
+					aria-live="polite"
+					data-filter-results-status
+					hidden
+				>
+				</p>
 				<div class="search-results-layout">
 					<div class="results-list">
-						{resultGroups.map((group) => (
-							<section class:list={['stay-section', group.isFeatured && 'stay-section-featured']} aria-label={group.title}>
-								<div class="stay-section-heading">
-									<div>
-										<h2>{group.title}</h2>
-										{group.description && <p>{group.description}</p>}
+						{
+							resultGroups.map((group) => (
+								<section
+									class:list={[
+										"stay-section",
+										group.isFeatured &&
+											"stay-section-featured",
+									]}
+									aria-label={group.title}
+								>
+									<div class="stay-section-heading">
+										<div>
+											<h2>{group.title}</h2>
+											{group.description && (
+												<p>{group.description}</p>
+											)}
+										</div>
 									</div>
-								</div>
-								<div class="stay-grid">
-									{group.listings.map((stay) => (
-										<article class="stay-card" data-amenities={availableAmenities.filter((filter) => matchesAmenity(stay, filter)).map(({ id }) => id).join(' ')}>
-											<div class="stay-image-wrap">
-												<a class="stay-image-link" href={getPropertyPath(stay)} aria-label={`View ${stay.name}`}>
-													<img class="stay-image" src={`https://images.unsplash.com/${stay.cardImage}?auto=format&fit=crop&w=600&q=85`} alt={stay.name} loading="lazy" />
-													{group.isFeatured && <span class="favorite-badge">Guest favorite</span>}
-												</a>
-												<button class="favorite-button" type="button" aria-label={`Save ${stay.name}`} aria-pressed="false">♡</button>
-											</div>
-											<h3><a href={getPropertyPath(stay)}>{stay.cardName}</a></h3>
-											<p class="stay-meta"><span>{formatMoney(stay.pricePerNight * stay.defaultNights)} for {stay.defaultNights} nights</span><span aria-hidden="true">·</span><span>★ {stay.rating}</span></p>
-										</article>
-									))}
-								</div>
-							</section>
-						))}
-						<p class="no-filter-results" data-no-filter-results hidden>No guesthouses match these amenities. Clear filters to see all stays.</p>
+									<div class="stay-grid">
+										{group.listings.map((stay) => (
+											<article
+												class="stay-card"
+												data-amenities={availableAmenities
+													.filter((filter) =>
+														matchesAmenity(
+															stay,
+															filter,
+														),
+													)
+													.map(({ id }) => id)
+													.join(" ")}
+											>
+												<div class="stay-image-wrap">
+													<a
+														class="stay-image-link"
+														href={getPropertyPath(
+															stay,
+														)}
+														aria-label={`View ${stay.name}`}
+													>
+														<img
+															class="stay-image"
+															src={`https://images.unsplash.com/${stay.cardImage}?auto=format&fit=crop&w=600&q=85`}
+															alt={stay.name}
+															loading="lazy"
+														/>
+														{group.isFeatured && (
+															<span class="favorite-badge">
+																Guest favorite
+															</span>
+														)}
+													</a>
+													<button
+														class="favorite-button"
+														type="button"
+														aria-label={`Save ${stay.name}`}
+														aria-pressed="false"
+													>
+														♡
+													</button>
+												</div>
+												<h3>
+													<a
+														href={getPropertyPath(
+															stay,
+														)}
+													>
+														{stay.cardName}
+													</a>
+												</h3>
+												<p class="stay-meta">
+													<span>
+														{formatMoney(
+															stay.pricePerNight *
+																stay.defaultNights,
+														)}{" "}
+														for {stay.defaultNights}{" "}
+														nights
+													</span>
+													<span aria-hidden="true">
+														·
+													</span>
+													<span>★ {stay.rating}</span>
+												</p>
+											</article>
+										))}
+									</div>
+								</section>
+							))
+						}
+						<p
+							class="no-filter-results"
+							data-no-filter-results
+							hidden
+						>
+							No guesthouses match these amenities. Clear filters
+							to see all stays.
+						</p>
 					</div>
-					<aside class="map-panel" aria-label="Map of Dhaka guesthouses">
+					<aside
+						class="map-panel"
+						aria-label="Map of Dhaka guesthouses"
+					>
 						<div class="map-panel-heading">
-							<div><p class="map-kicker">Explore the area</p><h2>Dhaka on the map</h2></div>
-							<a href="https://www.google.com/maps/search/guesthouses+in+Dhaka,+Bangladesh/" target="_blank" rel="noopener noreferrer" aria-label="Open Dhaka guesthouse map in Google Maps">↗</a>
+							<div>
+								<p class="map-kicker">Explore the area</p><h2>
+									Dhaka on the map
+								</h2>
+							</div>
+							<a
+								href="https://www.google.com/maps/search/guesthouses+in+Dhaka,+Bangladesh/"
+								target="_blank"
+								rel="noopener noreferrer"
+								aria-label="Open Dhaka guesthouse map in Google Maps"
+								>↗</a
+							>
 						</div>
 						<div class="map-frame">
-							<iframe title="Google Map of Dhaka, Bangladesh" src="https://maps.google.com/maps?q=Dhaka%2C%20Bangladesh&z=11&output=embed" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+							<iframe
+								title="Google Map of Dhaka, Bangladesh"
+								src="https://maps.google.com/maps?q=Dhaka%2C%20Bangladesh&z=11&output=embed"
+								loading="lazy"
+								referrerpolicy="strict-origin-when-cross-origin"
+								allowfullscreen></iframe>
 						</div>
-						<p class="map-caption">Browse the neighborhoods around Dhaka. Exact stay locations are shared after booking.</p>
+						<p class="map-caption">
+							Browse the neighborhoods around Dhaka. Exact stay
+							locations are shared after booking.
+						</p>
 					</aside>
 				</div>
 			</main>
-			<SiteFooter />
 		</div>
+		<SiteFooter />
 		<script>
-			const amenityDialog = document.querySelector<HTMLDialogElement>('#amenity-filter-dialog')!;
-			const amenityChecks = [...document.querySelectorAll<HTMLInputElement>('[data-amenity-check]')];
-			const amenityChips = [...document.querySelectorAll<HTMLButtonElement>('[data-amenity-chip]')];
-			const filterStatus = document.querySelector<HTMLElement>('[data-filter-results-status]')!;
-			const clearFiltersButton = document.querySelector<HTMLButtonElement>('[data-clear-amenity-filters]')!;
-			const activeFilterCount = document.querySelector<HTMLElement>('[data-active-filter-count]')!;
+			const amenityDialog = document.querySelector<HTMLDialogElement>(
+				"#amenity-filter-dialog",
+			)!;
+			const amenityChecks = [
+				...document.querySelectorAll<HTMLInputElement>(
+					"[data-amenity-check]",
+				),
+			];
+			const amenityChips = [
+				...document.querySelectorAll<HTMLButtonElement>(
+					"[data-amenity-chip]",
+				),
+			];
+			const filterStatus = document.querySelector<HTMLElement>(
+				"[data-filter-results-status]",
+			)!;
+			const clearFiltersButton =
+				document.querySelector<HTMLButtonElement>(
+					"[data-clear-amenity-filters]",
+				)!;
+			const activeFilterCount = document.querySelector<HTMLElement>(
+				"[data-active-filter-count]",
+			)!;
 
 			function updateAmenityFilters() {
-				const selectedAmenities = amenityChecks.filter((checkbox) => checkbox.checked).map((checkbox) => checkbox.value);
+				const selectedAmenities = amenityChecks
+					.filter((checkbox) => checkbox.checked)
+					.map((checkbox) => checkbox.value);
 				const selected = new Set(selectedAmenities);
 				let visibleCount = 0;
 
-				document.querySelectorAll<HTMLElement>('.stay-section').forEach((section) => {
-					const cards = [...section.querySelectorAll<HTMLElement>('.stay-card')];
-					cards.forEach((card) => {
-						const cardAmenities = new Set((card.dataset.amenities || '').split(/\s+/).filter(Boolean));
-						const visible = selectedAmenities.every((amenity) => cardAmenities.has(amenity));
-						card.hidden = !visible;
-						if (visible) visibleCount += 1;
+				document
+					.querySelectorAll<HTMLElement>(".stay-section")
+					.forEach((section) => {
+						const cards = [
+							...section.querySelectorAll<HTMLElement>(
+								".stay-card",
+							),
+						];
+						cards.forEach((card) => {
+							const cardAmenities = new Set(
+								(card.dataset.amenities || "")
+									.split(/\s+/)
+									.filter(Boolean),
+							);
+							const visible = selectedAmenities.every((amenity) =>
+								cardAmenities.has(amenity),
+							);
+							card.hidden = !visible;
+							if (visible) visibleCount += 1;
+						});
+						section.hidden = cards.every((card) => card.hidden);
 					});
-					section.hidden = cards.every((card) => card.hidden);
-				});
 
-				amenityChips.forEach((chip) => chip.setAttribute('aria-pressed', String(selected.has(chip.dataset.amenityChip || ''))));
+				amenityChips.forEach((chip) =>
+					chip.setAttribute(
+						"aria-pressed",
+						String(selected.has(chip.dataset.amenityChip || "")),
+					),
+				);
 				clearFiltersButton.hidden = selectedAmenities.length === 0;
 				activeFilterCount.hidden = selectedAmenities.length === 0;
-				activeFilterCount.textContent = String(selectedAmenities.length);
+				activeFilterCount.textContent = String(
+					selectedAmenities.length,
+				);
 				filterStatus.hidden = selectedAmenities.length === 0;
 				filterStatus.textContent = selectedAmenities.length
-					? `${visibleCount} ${visibleCount === 1 ? 'stay' : 'stays'} match your selected amenities`
-					: '';
-				document.querySelector<HTMLElement>('[data-no-filter-results]').hidden = visibleCount > 0;
+					? `${visibleCount} ${visibleCount === 1 ? "stay" : "stays"} match your selected amenities`
+					: "";
+				document.querySelector<HTMLElement>(
+					"[data-no-filter-results]",
+				).hidden = visibleCount > 0;
 			}
 
-			document.querySelector('[data-open-amenity-filters]')?.addEventListener('click', () => amenityDialog.showModal());
-			amenityDialog.querySelector('[data-close-amenity-filters]')?.addEventListener('click', () => amenityDialog.close());
-			amenityDialog.querySelector('[data-apply-amenity-filters]')?.addEventListener('click', () => {
-				updateAmenityFilters();
-				amenityDialog.close();
-			});
-			amenityDialog.querySelector('[data-clear-dialog-filters]')?.addEventListener('click', () => {
-				amenityChecks.forEach((checkbox) => { checkbox.checked = false; });
-				updateAmenityFilters();
-			});
-			amenityDialog.addEventListener('click', (event) => {
+			document
+				.querySelector("[data-open-amenity-filters]")
+				?.addEventListener("click", () => amenityDialog.showModal());
+			amenityDialog
+				.querySelector("[data-close-amenity-filters]")
+				?.addEventListener("click", () => amenityDialog.close());
+			amenityDialog
+				.querySelector("[data-apply-amenity-filters]")
+				?.addEventListener("click", () => {
+					updateAmenityFilters();
+					amenityDialog.close();
+				});
+			amenityDialog
+				.querySelector("[data-clear-dialog-filters]")
+				?.addEventListener("click", () => {
+					amenityChecks.forEach((checkbox) => {
+						checkbox.checked = false;
+					});
+					updateAmenityFilters();
+				});
+			amenityDialog.addEventListener("click", (event) => {
 				if (event.target === amenityDialog) amenityDialog.close();
 			});
-			amenityChips.forEach((chip) => chip.addEventListener('click', () => {
-				const checkbox = amenityChecks.find((input) => input.value === chip.dataset.amenityChip);
-				if (!checkbox) return;
-				checkbox.checked = !checkbox.checked;
-				updateAmenityFilters();
-			}));
-			clearFiltersButton.addEventListener('click', () => {
-				amenityChecks.forEach((checkbox) => { checkbox.checked = false; });
+			amenityChips.forEach((chip) =>
+				chip.addEventListener("click", () => {
+					const checkbox = amenityChecks.find(
+						(input) => input.value === chip.dataset.amenityChip,
+					);
+					if (!checkbox) return;
+					checkbox.checked = !checkbox.checked;
+					updateAmenityFilters();
+				}),
+			);
+			clearFiltersButton.addEventListener("click", () => {
+				amenityChecks.forEach((checkbox) => {
+					checkbox.checked = false;
+				});
 				updateAmenityFilters();
 			});
 
-			document.querySelectorAll('.favorite-button').forEach((button) => {
-				button.addEventListener('click', () => {
-					const saved = button.getAttribute('aria-pressed') !== 'true';
-					button.setAttribute('aria-pressed', String(saved));
-					button.textContent = saved ? '♥' : '♡';
-					const stayName = button.closest('.stay-card')?.querySelector('h3')?.textContent || '';
-					button.setAttribute('aria-label', `${saved ? 'Remove' : 'Save'} ${stayName}`);
+			document.querySelectorAll(".favorite-button").forEach((button) => {
+				button.addEventListener("click", () => {
+					const saved =
+						button.getAttribute("aria-pressed") !== "true";
+					button.setAttribute("aria-pressed", String(saved));
+					button.textContent = saved ? "♥" : "♡";
+					const stayName =
+						button.closest(".stay-card")?.querySelector("h3")
+							?.textContent || "";
+					button.setAttribute(
+						"aria-label",
+						`${saved ? "Remove" : "Save"} ${stayName}`,
+					);
 				});
 			});
 		</script>
-		<dialog class="amenity-filter-dialog" id="amenity-filter-dialog" aria-labelledby="amenity-filter-title">
+		<dialog
+			class="amenity-filter-dialog"
+			id="amenity-filter-dialog"
+			aria-labelledby="amenity-filter-title"
+		>
 			<div class="amenity-dialog-heading">
-				<div><p>Make it your kind of stay</p><h2 id="amenity-filter-title">Filter by amenities</h2></div>
-				<button type="button" class="amenity-dialog-close" data-close-amenity-filters aria-label="Close filters">×</button>
+				<div>
+					<p>Make it your kind of stay</p><h2
+						id="amenity-filter-title"
+					>
+						Filter by amenities
+					</h2>
+				</div>
+				<button
+					type="button"
+					class="amenity-dialog-close"
+					data-close-amenity-filters
+					aria-label="Close filters">×</button
+				>
 			</div>
 			<div class="amenity-options">
-				{availableAmenities.map(({ id, label }) => (
-					<label class="amenity-option">
-						<input type="checkbox" value={id} data-amenity-check />
-						<span>{label}</span>
-					</label>
-				))}
+				{
+					availableAmenities.map(({ id, label }) => (
+						<label class="amenity-option">
+							<input
+								type="checkbox"
+								value={id}
+								data-amenity-check
+							/>
+							<span>{label}</span>
+						</label>
+					))
+				}
 			</div>
 			<div class="amenity-dialog-actions">
-				<button type="button" data-clear-dialog-filters>Clear all</button>
-				<button type="button" data-apply-amenity-filters>Show stays</button>
+				<button type="button" data-clear-dialog-filters
+					>Clear all</button
+				>
+				<button type="button" data-apply-amenity-filters
+					>Show stays</button
+				>
 			</div>
 		</dialog>
 		<style>
-			.dhaka-page{max-width:1540px;margin:0 auto;padding:0 clamp(16px,2.5vw,36px) 48px}
-			.search-again{display:inline-flex;align-items:center;gap:9px;min-height:44px;font-size:13px;font-weight:600}
-			.search-again span{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--surface-soft);font-size:17px}
-			.results-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:34px 0 24px}
-			.results-location{margin-bottom:6px;color:var(--mut);font-size:13px;font-weight:600}
-			.results-location span{padding:0 5px;color:var(--brand)}
-			h1{font-family:Unbounded,'Instrument Sans',sans-serif;font-size:clamp(24px,3vw,34px);font-weight:500;line-height:1.2}
-			.results-summary{margin-top:8px;color:var(--mut);font-size:14px}
-			.results-summary span{padding:0 5px}
-			.search-again{flex:0 0 auto;padding-bottom:3px}
-			.search-again span{background:var(--brand);color:#fff}
-			.amenity-toolbar{display:flex;align-items:center;gap:12px;min-width:0;overflow:hidden;padding:12px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-			.all-filters-button,.amenity-chip,.clear-filters{display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:0 14px;border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--ink);font:600 13px 'Instrument Sans',sans-serif;cursor:pointer}
-			.all-filters-button svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-linecap:round;stroke-width:1.7}
-			.active-filter-count{display:grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:50%;background:var(--brand);color:#fff;font-size:11px}
-			.amenity-chips{display:flex;flex:1 1 auto;gap:8px;min-width:0;overflow-x:auto;scrollbar-width:none}
-			.amenity-chips::-webkit-scrollbar{display:none}
-			.amenity-chip{min-height:40px;padding:0 13px;white-space:nowrap;font-weight:500}
-			.all-filters-button:hover,.amenity-chip:hover{border-color:var(--brand)}
-			.amenity-chip[aria-pressed=true]{border-color:var(--brand);background:var(--surface-soft);color:var(--brand)}
-			.clear-filters{border:0;background:transparent;color:var(--brand);text-decoration:underline}
-			.filter-results-status{margin:12px 0 0;color:var(--mut);font-size:13px}
-			.search-results-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,1fr);align-items:start;gap:clamp(20px,3vw,40px);margin-top:28px}
-			.results-list{min-width:0}
-			.stay-section{margin-top:34px}
-			.stay-section:first-child{margin-top:0}
-			.stay-section-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:16px}
-			.stay-section-heading h2{font-family:Unbounded,'Instrument Sans',sans-serif;font-size:clamp(19px,2vw,25px);font-weight:500;line-height:1.25}
-			.stay-section-heading p{margin-top:5px;color:var(--mut);font-size:13px}
-			.stay-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 14px}
-			.stay-card{min-width:0}
-			.stay-card[hidden],.stay-section[hidden],[hidden]{display:none!important}
-			.stay-image-wrap{position:relative;aspect-ratio:1/1;overflow:hidden;border-radius:20px;background:var(--surface-soft)}
-			.stay-image-link{position:absolute;inset:0;display:block}
-			.stay-image{width:100%;height:100%;object-fit:cover;transition:transform .35s ease}
-			.stay-card:hover .stay-image{transform:scale(1.035)}
-			.favorite-badge{position:absolute;top:12px;left:12px;padding:5px 11px;border-radius:999px;background:#fff;color:#28252d;font-size:12px;font-weight:600;box-shadow:0 2px 8px #0002}
-			.favorite-button{position:absolute;top:10px;right:10px;display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;background:transparent;color:#fff;font-size:30px;line-height:1;text-shadow:0 1px 4px #000b;cursor:pointer}
-			.favorite-button[aria-pressed=true]{color:#ff3155}
-			.stay-card h3{margin:8px 4px 1px;font-family:'Instrument Sans',sans-serif;font-size:15px;font-weight:500;line-height:1.35}
-			.stay-meta{display:flex;flex-wrap:wrap;gap:4px;margin:0 4px;color:var(--mut);font-size:14px;line-height:1.4}
-			.no-filter-results{margin:28px 0;color:var(--mut)}
-			.map-panel{position:sticky;top:20px;min-width:0;padding:14px;border:1px solid var(--border);border-radius:20px;background:var(--surface)}
-			.map-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px}
-			.map-kicker{margin-bottom:3px;color:var(--mut);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
-			.map-panel-heading h2{font-family:Unbounded,'Instrument Sans',sans-serif;font-size:16px;font-weight:500}
-			.map-panel-heading>a{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border:1px solid var(--border);border-radius:50%;font-size:18px}
-			.map-frame{aspect-ratio:4/4.6;overflow:hidden;border-radius:14px;background:var(--surface-soft)}
-			.map-frame iframe{display:block;width:100%;height:100%;border:0}
-			.map-caption{margin:10px 2px 1px;color:var(--mut);font-size:12px;line-height:1.5}
-			.amenity-filter-dialog{width:min(440px,calc(100vw - 32px));max-width:none;max-height:min(80vh,680px);padding:22px;border:1px solid var(--border);border-radius:20px;background:var(--surface);color:var(--text);box-shadow:0 20px 70px #14121c33}
-			.amenity-filter-dialog::backdrop{background:#17151c80;backdrop-filter:blur(3px)}
-			.amenity-dialog-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding-bottom:18px;border-bottom:1px solid var(--border)}
-			.amenity-dialog-heading p{margin-bottom:5px;color:var(--mut);font-size:12px}
-			.amenity-dialog-heading h2{font-family:Unbounded,'Instrument Sans',sans-serif;font-size:20px;font-weight:500}
-			.amenity-dialog-close{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;border:1px solid var(--border);border-radius:50%;background:transparent;color:var(--ink);font-size:24px;cursor:pointer}
-			.amenity-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 14px;padding:14px 0}
-			.amenity-option{display:flex;align-items:center;gap:10px;min-height:46px;font-size:14px;cursor:pointer}
-			.amenity-option input{width:18px;height:18px;accent-color:var(--brand)}
-			.amenity-dialog-actions{display:flex;justify-content:space-between;gap:12px;padding-top:14px;border-top:1px solid var(--border)}
-			.amenity-dialog-actions button{min-height:44px;padding:0 18px;border:0;border-radius:999px;background:transparent;color:var(--ink);font:600 14px 'Instrument Sans',sans-serif;text-decoration:underline;cursor:pointer}
-			.amenity-dialog-actions [data-apply-amenity-filters]{background:var(--brand);color:#fff;text-decoration:none}
-			@media(min-width:1400px){.stay-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-			@media(max-width:980px){.search-results-layout{grid-template-columns:minmax(0,1fr) minmax(260px,.82fr);gap:20px}.stay-grid{gap:16px 10px}.map-panel{padding:10px}}
-			@media(max-width:760px){.search-results-layout{grid-template-columns:minmax(0,1fr)}.map-panel{position:static;grid-row:2}.map-frame{aspect-ratio:16/10}.stay-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 12px}.results-heading{padding-top:26px}}
-			@media(max-width:560px){.amenity-toolbar{gap:8px}.all-filters-button,.amenity-chip,.clear-filters{min-height:42px;padding:0 12px}.amenity-chips{margin-right:-16px;padding-right:16px}.search-results-layout{gap:28px;margin-top:20px}.stay-section{margin-top:28px}.stay-section-heading{margin-bottom:12px}.stay-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 10px}.stay-image-wrap{border-radius:15px}.favorite-badge{top:8px;left:8px;padding:5px 8px;font-size:11px}.favorite-button{top:4px;right:4px}.results-heading{align-items:flex-start;flex-direction:column;gap:12px;padding:24px 0 18px}.search-again{padding:0}.map-panel{border-radius:16px}.amenity-filter-dialog{padding:18px}}
-			@media(max-width:360px){.stay-card h3{font-size:14px}.stay-meta{font-size:12px}}
+			:global(body) {
+				padding: 0;
+			}
+			.dhaka-page {
+				max-width: 1540px;
+				margin: 0 auto;
+				padding: 0 clamp(16px, 2.5vw, 36px);
+			}
+			main {
+				margin-bottom: clamp(40px, 6vw, 72px);
+			}
+			.search-again {
+				display: inline-flex;
+				align-items: center;
+				gap: 9px;
+				min-height: 44px;
+				font-size: 13px;
+				font-weight: 600;
+			}
+			.search-again span {
+				display: grid;
+				place-items: center;
+				width: 32px;
+				height: 32px;
+				border-radius: 50%;
+				background: var(--surface-soft);
+				font-size: 17px;
+			}
+			.results-heading {
+				display: flex;
+				align-items: flex-end;
+				justify-content: space-between;
+				gap: 20px;
+				padding: 34px 0 24px;
+			}
+			.results-location {
+				margin-bottom: 6px;
+				color: var(--mut);
+				font-size: 13px;
+				font-weight: 600;
+			}
+			.results-location span {
+				padding: 0 5px;
+				color: var(--brand);
+			}
+			h1 {
+				font-family: Unbounded, "Instrument Sans", sans-serif;
+				font-size: clamp(24px, 3vw, 34px);
+				font-weight: 500;
+				line-height: 1.2;
+			}
+			.results-summary {
+				margin-top: 8px;
+				color: var(--mut);
+				font-size: 14px;
+			}
+			.results-summary span {
+				padding: 0 5px;
+			}
+			.search-again {
+				flex: 0 0 auto;
+				padding-bottom: 3px;
+			}
+			.search-again span {
+				background: var(--brand);
+				color: #fff;
+			}
+			.amenity-toolbar {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+				min-width: 0;
+				overflow: hidden;
+				padding: 12px 0;
+				border-top: 1px solid var(--border);
+				border-bottom: 1px solid var(--border);
+			}
+			.all-filters-button,
+			.amenity-chip,
+			.clear-filters {
+				display: inline-flex;
+				flex: 0 0 auto;
+				align-items: center;
+				justify-content: center;
+				gap: 8px;
+				min-height: 42px;
+				padding: 0 14px;
+				border: 1px solid var(--border);
+				border-radius: 999px;
+				background: var(--surface);
+				color: var(--ink);
+				font:
+					600 13px "Instrument Sans",
+					sans-serif;
+				cursor: pointer;
+			}
+			.all-filters-button svg {
+				width: 17px;
+				height: 17px;
+				fill: none;
+				stroke: currentColor;
+				stroke-linecap: round;
+				stroke-width: 1.7;
+			}
+			.active-filter-count {
+				display: grid;
+				place-items: center;
+				min-width: 20px;
+				height: 20px;
+				padding: 0 5px;
+				border-radius: 50%;
+				background: var(--brand);
+				color: #fff;
+				font-size: 11px;
+			}
+			.amenity-chips {
+				display: flex;
+				flex: 1 1 auto;
+				gap: 8px;
+				min-width: 0;
+				overflow-x: auto;
+				scrollbar-width: none;
+			}
+			.amenity-chips::-webkit-scrollbar {
+				display: none;
+			}
+			.amenity-chip {
+				min-height: 40px;
+				padding: 0 13px;
+				white-space: nowrap;
+				font-weight: 500;
+			}
+			.all-filters-button:hover,
+			.amenity-chip:hover {
+				border-color: var(--brand);
+			}
+			.amenity-chip[aria-pressed="true"] {
+				border-color: var(--brand);
+				background: var(--surface-soft);
+				color: var(--brand);
+			}
+			.clear-filters {
+				border: 0;
+				background: transparent;
+				color: var(--brand);
+				text-decoration: underline;
+			}
+			.filter-results-status {
+				margin: 12px 0 0;
+				color: var(--mut);
+				font-size: 13px;
+			}
+			.search-results-layout {
+				display: grid;
+				grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr);
+				align-items: start;
+				gap: clamp(20px, 3vw, 40px);
+				margin-top: 28px;
+			}
+			.results-list {
+				min-width: 0;
+			}
+			.stay-section {
+				margin-top: 34px;
+			}
+			.stay-section:first-child {
+				margin-top: 0;
+			}
+			.stay-section-heading {
+				display: flex;
+				align-items: flex-end;
+				justify-content: space-between;
+				gap: 16px;
+				margin-bottom: 16px;
+			}
+			.stay-section-heading h2 {
+				font-family: Unbounded, "Instrument Sans", sans-serif;
+				font-size: clamp(19px, 2vw, 25px);
+				font-weight: 500;
+				line-height: 1.25;
+			}
+			.stay-section-heading p {
+				margin-top: 5px;
+				color: var(--mut);
+				font-size: 13px;
+			}
+			.stay-grid {
+				display: grid;
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				gap: 20px 14px;
+			}
+			.stay-card {
+				min-width: 0;
+			}
+			.stay-card[hidden],
+			.stay-section[hidden],
+			[hidden] {
+				display: none !important;
+			}
+			.stay-image-wrap {
+				position: relative;
+				aspect-ratio: 1/1;
+				overflow: hidden;
+				border-radius: 20px;
+				background: var(--surface-soft);
+			}
+			.stay-image-link {
+				position: absolute;
+				inset: 0;
+				display: block;
+			}
+			.stay-image {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				transition: transform 0.35s ease;
+			}
+			.stay-card:hover .stay-image {
+				transform: scale(1.035);
+			}
+			.favorite-badge {
+				position: absolute;
+				top: 12px;
+				left: 12px;
+				padding: 5px 11px;
+				border-radius: 999px;
+				background: #fff;
+				color: #28252d;
+				font-size: 12px;
+				font-weight: 600;
+				box-shadow: 0 2px 8px #0002;
+			}
+			.favorite-button {
+				position: absolute;
+				top: 10px;
+				right: 10px;
+				display: grid;
+				place-items: center;
+				width: 44px;
+				height: 44px;
+				padding: 0;
+				border: 0;
+				background: transparent;
+				color: #fff;
+				font-size: 30px;
+				line-height: 1;
+				text-shadow: 0 1px 4px #000b;
+				cursor: pointer;
+			}
+			.favorite-button[aria-pressed="true"] {
+				color: #ff3155;
+			}
+			.stay-card h3 {
+				margin: 8px 4px 1px;
+				font-family: "Instrument Sans", sans-serif;
+				font-size: 15px;
+				font-weight: 500;
+				line-height: 1.35;
+			}
+			.stay-meta {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 4px;
+				margin: 0 4px;
+				color: var(--mut);
+				font-size: 14px;
+				line-height: 1.4;
+			}
+			.no-filter-results {
+				margin: 28px 0;
+				color: var(--mut);
+			}
+			.map-panel {
+				position: sticky;
+				top: 20px;
+				min-width: 0;
+				padding: 14px;
+				border: 1px solid var(--border);
+				border-radius: 20px;
+				background: var(--surface);
+			}
+			.map-panel-heading {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 12px;
+				margin: 0 0 12px;
+			}
+			.map-kicker {
+				margin-bottom: 3px;
+				color: var(--mut);
+				font-size: 11px;
+				font-weight: 600;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+			}
+			.map-panel-heading h2 {
+				font-family: Unbounded, "Instrument Sans", sans-serif;
+				font-size: 16px;
+				font-weight: 500;
+			}
+			.map-panel-heading > a {
+				display: grid;
+				place-items: center;
+				flex: 0 0 38px;
+				width: 38px;
+				height: 38px;
+				border: 1px solid var(--border);
+				border-radius: 50%;
+				font-size: 18px;
+			}
+			.map-frame {
+				aspect-ratio: 4/4.6;
+				overflow: hidden;
+				border-radius: 14px;
+				background: var(--surface-soft);
+			}
+			.map-frame iframe {
+				display: block;
+				width: 100%;
+				height: 100%;
+				border: 0;
+			}
+			.map-caption {
+				margin: 10px 2px 1px;
+				color: var(--mut);
+				font-size: 12px;
+				line-height: 1.5;
+			}
+			.amenity-filter-dialog {
+				width: min(440px, calc(100vw - 32px));
+				max-width: none;
+				max-height: min(80vh, 680px);
+				padding: 22px;
+				border: 1px solid var(--border);
+				border-radius: 20px;
+				background: var(--surface);
+				color: var(--text);
+				box-shadow: 0 20px 70px #14121c33;
+			}
+			.amenity-filter-dialog::backdrop {
+				background: #17151c80;
+				backdrop-filter: blur(3px);
+			}
+			.amenity-dialog-heading {
+				display: flex;
+				align-items: flex-start;
+				justify-content: space-between;
+				gap: 16px;
+				padding-bottom: 18px;
+				border-bottom: 1px solid var(--border);
+			}
+			.amenity-dialog-heading p {
+				margin-bottom: 5px;
+				color: var(--mut);
+				font-size: 12px;
+			}
+			.amenity-dialog-heading h2 {
+				font-family: Unbounded, "Instrument Sans", sans-serif;
+				font-size: 20px;
+				font-weight: 500;
+			}
+			.amenity-dialog-close {
+				display: grid;
+				place-items: center;
+				flex: 0 0 40px;
+				width: 40px;
+				height: 40px;
+				border: 1px solid var(--border);
+				border-radius: 50%;
+				background: transparent;
+				color: var(--ink);
+				font-size: 24px;
+				cursor: pointer;
+			}
+			.amenity-options {
+				display: grid;
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				gap: 4px 14px;
+				padding: 14px 0;
+			}
+			.amenity-option {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				min-height: 46px;
+				font-size: 14px;
+				cursor: pointer;
+			}
+			.amenity-option input {
+				width: 18px;
+				height: 18px;
+				accent-color: var(--brand);
+			}
+			.amenity-dialog-actions {
+				display: flex;
+				justify-content: space-between;
+				gap: 12px;
+				padding-top: 14px;
+				border-top: 1px solid var(--border);
+			}
+			.amenity-dialog-actions button {
+				min-height: 44px;
+				padding: 0 18px;
+				border: 0;
+				border-radius: 999px;
+				background: transparent;
+				color: var(--ink);
+				font:
+					600 14px "Instrument Sans",
+					sans-serif;
+				text-decoration: underline;
+				cursor: pointer;
+			}
+			.amenity-dialog-actions [data-apply-amenity-filters] {
+				background: var(--brand);
+				color: #fff;
+				text-decoration: none;
+			}
+			@media (min-width: 1400px) {
+				.stay-grid {
+					grid-template-columns: repeat(3, minmax(0, 1fr));
+				}
+			}
+			@media (max-width: 980px) {
+				.search-results-layout {
+					grid-template-columns: minmax(0, 1fr) minmax(260px, 0.82fr);
+					gap: 20px;
+				}
+				.stay-grid {
+					gap: 16px 10px;
+				}
+				.map-panel {
+					padding: 10px;
+				}
+			}
+			@media (max-width: 760px) {
+				.search-results-layout {
+					grid-template-columns: minmax(0, 1fr);
+				}
+				.map-panel {
+					position: static;
+					grid-row: 2;
+				}
+				.map-frame {
+					aspect-ratio: 16/10;
+				}
+				.stay-grid {
+					grid-template-columns: repeat(3, minmax(0, 1fr));
+					gap: 18px 12px;
+				}
+				.results-heading {
+					padding-top: 26px;
+				}
+			}
+			@media (max-width: 560px) {
+				.amenity-toolbar {
+					gap: 8px;
+				}
+				.all-filters-button,
+				.amenity-chip,
+				.clear-filters {
+					min-height: 42px;
+					padding: 0 12px;
+				}
+				.amenity-chips {
+					margin-right: -16px;
+					padding-right: 16px;
+				}
+				.search-results-layout {
+					gap: 28px;
+					margin-top: 20px;
+				}
+				.stay-section {
+					margin-top: 28px;
+				}
+				.stay-section-heading {
+					margin-bottom: 12px;
+				}
+				.stay-grid {
+					grid-template-columns: repeat(2, minmax(0, 1fr));
+					gap: 18px 10px;
+				}
+				.stay-image-wrap {
+					border-radius: 15px;
+				}
+				.favorite-badge {
+					top: 8px;
+					left: 8px;
+					padding: 5px 8px;
+					font-size: 11px;
+				}
+				.favorite-button {
+					top: 4px;
+					right: 4px;
+				}
+				.results-heading {
+					align-items: flex-start;
+					flex-direction: column;
+					gap: 12px;
+					padding: 24px 0 18px;
+				}
+				.search-again {
+					padding: 0;
+				}
+				.map-panel {
+					border-radius: 16px;
+				}
+				.amenity-filter-dialog {
+					padding: 18px;
+				}
+			}
+			@media (max-width: 360px) {
+				.stay-card h3 {
+					font-size: 14px;
+				}
+				.stay-meta {
+					font-size: 12px;
+				}
+			}
 		</style>
 	</body>
 </html>

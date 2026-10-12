@@ -1,29 +1,270 @@
 <footer class="site-footer">
-	<div>
-		<h5 data-i18n="footer.explore">Explore</h5>
-		<a href="/#stays" data-i18n="footer.guesthouses">Guesthouses</a>
-		<a href="/#ride" data-i18n="footer.pickDrop">Pick &amp; drop</a>
-		<a href="/#people" data-i18n="footer.guides">Guides</a>
+	<div class="site-footer-inner">
+		<div class="footer-nav">
+			<div class="footer-col">
+				<h5 data-i18n="footer.explore">Explore</h5>
+				<a href="/#stays" data-i18n="footer.guesthouses">Guesthouses</a>
+				<a href="/#ride" data-i18n="footer.pickDrop">Pick &amp; drop</a>
+				<a href="/#people" data-i18n="footer.guides">Guides</a>
+			</div>
+			<div class="footer-col">
+				<h5 data-i18n="footer.support">Support</h5>
+				<a href="#" data-i18n="footer.help">Help centre</a>
+				<a href="#" data-i18n="footer.contact">Contact us</a>
+			</div>
+			<div class="footer-col">
+				<h5 data-i18n="footer.legal">Legal</h5>
+				<a href="#" data-i18n="footer.terms">Terms</a>
+				<a href="#" data-i18n="footer.privacy">Privacy</a>
+			</div>
+		</div>
+		<div class="footer-brand">
+			<img class="footer-logo" src="/assets/logo/logo.png" data-theme-logo-light="/assets/logo/logo.png" data-theme-logo-dark="/assets/logo/logo-darkmode.png" alt="GuesthouseBD" />
+			<form class="field footer-field" onsubmit="return false">
+				<input placeholder="Enter email" aria-label="Newsletter email" data-i18n-placeholder="footer.newsletter" data-i18n-aria-label="footer.newsletter" />
+				<button aria-label="Subscribe" data-i18n-aria-label="footer.subscribe">→</button>
+			</form>
+		</div>
 	</div>
-	<div>
-		<h5 data-i18n="footer.support">Support</h5>
-		<a href="#" data-i18n="footer.help">Help centre</a>
-		<a href="#" data-i18n="footer.contact">Contact us</a>
-	</div>
-	<div>
-		<h5 data-i18n="footer.legal">Legal</h5>
-		<a href="#" data-i18n="footer.terms">Terms</a>
-		<a href="#" data-i18n="footer.privacy">Privacy</a>
-	</div>
-	<div class="footer-brand">
-		<img class="footer-logo" src="/assets/logo/logo.png" data-theme-logo-light="/assets/logo/logo.png" data-theme-logo-dark="/assets/logo/logo-darkmode.png" alt="GuesthouseBD" />
-		<form class="field" onsubmit="return false">
-			<input placeholder="Enter email" aria-label="Newsletter email" data-i18n-placeholder="footer.newsletter" data-i18n-aria-label="footer.newsletter" />
-			<button aria-label="Subscribe" data-i18n-aria-label="footer.subscribe">→</button>
-		</form>
+	<div class="site-footer-bottom">
+		<div class="site-footer-bottom-inner">
+			<p>© 2026 GuesthouseBD. All rights reserved.</p>
+			<div class="site-footer-bottom-links">
+				<a href="/#stays" data-i18n="footer.guesthouses">Guesthouses</a>
+				<span aria-hidden="true">·</span>
+				<a href="#" data-i18n="footer.privacy">Privacy</a>
+				<span aria-hidden="true">·</span>
+				<a href="#" data-i18n="footer.terms">Terms</a>
+			</div>
+		</div>
 	</div>
 </footer>
 
 <style>
-	@media(max-width:480px){.site-footer>*{min-width:0}.site-footer .footer-brand{flex:1 1 220px}.site-footer .field{width:100%;max-width:100%}.site-footer .footer-logo{max-width:100%}}
+	.site-footer {
+		width: 100%;
+		background: var(--footer-surface);
+		color: var(--footer-ink);
+		border-top: 1px solid var(--border);
+		box-sizing: border-box;
+		position: relative;
+		z-index: 10;
+	}
+
+	:global(.cta + .site-footer),
+	:global(.cta + footer) {
+		border-radius: 0 0 var(--r) var(--r);
+		margin-bottom: 12px;
+		border-top: 0;
+	}
+
+	.site-footer-inner {
+		width: 100%;
+		max-width: 1540px;
+		margin: 0 auto;
+		padding: clamp(36px, 5vw, 56px) clamp(16px, 2.5vw, 36px) clamp(28px, 4vw, 40px);
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		gap: clamp(24px, 4vw, 56px);
+		box-sizing: border-box;
+	}
+
+	.footer-nav {
+		display: flex;
+		flex-wrap: wrap;
+		gap: clamp(28px, 5vw, 64px);
+		flex: 1 1 auto;
+	}
+
+	.footer-col {
+		min-width: 110px;
+	}
+
+	.footer-col h5 {
+		font-family: 'Instrument Sans', sans-serif;
+		font-size: 14px;
+		font-weight: 600;
+		margin-bottom: 14px;
+		color: var(--ink);
+		letter-spacing: -0.01em;
+	}
+
+	.footer-col a {
+		display: block;
+		font-size: 13px;
+		margin-bottom: 8px;
+		color: var(--mut);
+		text-decoration: none;
+		transition: color 0.2s ease;
+	}
+
+	.footer-col a:hover {
+		color: var(--brand);
+	}
+
+	.footer-brand {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 14px;
+		flex: 0 1 340px;
+		min-width: 240px;
+	}
+
+	.footer-logo {
+		display: block;
+		width: 170px;
+		max-width: 100%;
+		height: auto;
+		background: transparent;
+	}
+
+	.footer-field {
+		width: 100%;
+		max-width: 320px;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 999px;
+		display: flex;
+		align-items: center;
+		padding: 4px 4px 4px 16px;
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+		transition: border-color 0.2s ease, box-shadow 0.2s ease;
+		box-sizing: border-box;
+		margin-top: 0;
+	}
+
+	.footer-field:focus-within {
+		border-color: var(--brand);
+		box-shadow: 0 0 0 3px rgba(230, 24, 61, 0.12);
+	}
+
+	.footer-field input {
+		flex: 1;
+		min-width: 0;
+		border: 0;
+		outline: none;
+		background: transparent;
+		font-family: inherit;
+		font-size: 13px;
+		color: var(--ink);
+	}
+
+	.footer-field button {
+		display: grid;
+		place-items: center;
+		width: 38px;
+		height: 38px;
+		min-width: 38px;
+		border: 0;
+		border-radius: 50%;
+		background: var(--brand);
+		color: #fff;
+		font-size: 16px;
+		cursor: pointer;
+		transition: transform 0.2s ease, background 0.2s ease;
+		padding: 0;
+	}
+
+	.footer-field button:hover {
+		background: #ff3155;
+		transform: scale(1.05);
+	}
+
+	.site-footer-bottom {
+		border-top: 1px solid var(--border);
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	.site-footer-bottom-inner {
+		width: 100%;
+		max-width: 1540px;
+		margin: 0 auto;
+		padding: 16px clamp(16px, 2.5vw, 36px) calc(16px + env(safe-area-inset-bottom));
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 12px;
+		font-size: 12px;
+		color: var(--mut);
+		box-sizing: border-box;
+	}
+
+	.site-footer-bottom-links {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.site-footer-bottom-links a {
+		color: var(--mut);
+		text-decoration: none;
+		transition: color 0.2s ease;
+	}
+
+	.site-footer-bottom-links a:hover {
+		color: var(--brand);
+	}
+
+	@media (max-width: 900px) {
+		.site-footer-inner {
+			flex-direction: column;
+			gap: 36px;
+		}
+		.footer-nav {
+			width: 100%;
+			justify-content: space-between;
+			gap: 20px;
+		}
+		.footer-brand {
+			align-items: flex-start;
+			width: 100%;
+			max-width: 100%;
+		}
+		.footer-field {
+			max-width: 360px;
+		}
+	}
+
+	@media (max-width: 600px) {
+		.site-footer-inner {
+			padding: 32px clamp(16px, 4vw, 24px) 24px;
+			gap: 28px;
+		}
+		.footer-nav {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: 24px 16px;
+		}
+		.footer-col:last-child {
+			grid-column: 1 / -1;
+		}
+		.footer-brand {
+			width: 100%;
+			align-items: stretch;
+		}
+		.footer-logo {
+			width: 140px;
+		}
+		.footer-field {
+			width: 100%;
+			max-width: 100%;
+		}
+		.site-footer-bottom-inner {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 8px;
+			font-size: 11px;
+		}
+	}
+
+	@media (max-width: 380px) {
+		.footer-nav {
+			grid-template-columns: 1fr;
+			gap: 20px;
+		}
+	}
 </style>

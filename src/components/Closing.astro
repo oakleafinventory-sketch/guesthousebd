@@ -4,9 +4,16 @@ import homeContent from '../data/home.json';
 ---
 
 <div class="panel cta">
-	<video id="closing-video" class="cta-video ambient-video" muted loop playsinline preload="metadata" poster={homeContent.media.closing.videoPoster} aria-hidden="true" tabindex="-1">
+	<video id="closing-video" class="cta-video ambient-video" autoplay muted loop playsinline preload="metadata" poster={homeContent.media.closing.videoPoster} aria-hidden="true" tabindex="-1">
 		<source src={homeContent.media.closing.video} type="video/mp4" />
 	</video>
-	<div class="cta-content"><small data-i18n="closing.tag">Discover places worth travelling for</small><h2 style="color: #fff; margin-bottom: 14px" data-i18n="closing.title">Your next stay awaits now</h2><a class="btn" href="#stays"><span data-i18n="closing.explore">Explore stays</span> <i>↗</i></a></div>
+	<div class="cta-content"><small data-i18n="closing.tag">Discover places worth travelling for</small><h2 style="color: #fff; margin-bottom: 14px" data-i18n="closing.title">Your next stay awaits now</h2><a class="btn" href="/#stays"><span data-i18n="closing.explore">Explore stays</span> <i>↗</i></a></div>
 </div>
 <SiteFooter />
+
+<script>
+	const video = document.querySelector<HTMLVideoElement>('#closing-video');
+	if (video && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+		video.play().catch(() => {});
+	}
+</script>
