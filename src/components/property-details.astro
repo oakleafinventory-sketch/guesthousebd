@@ -1,6 +1,7 @@
 ---
 import { getPropertyDetails, type PropertyListing } from '../data/property-details';
 import { languages } from '../i18n/locales.js';
+import UserNav from './UserNav.astro';
 
 interface Props {
 	property: PropertyListing;
@@ -22,7 +23,7 @@ const stayFacts = [
 const formatMoney = (amount: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(amount);
 ---
 
-		<div class="property-page" data-property-rate={property.pricePerNight} data-property-original-rate={property.originalPricePerNight} data-default-nights={property.defaultNights} data-default-guests={property.defaultGuests} data-max-guests={property.maxGuests} data-guest-capacity={details.guestCapacity || ''} data-bedrooms={details.bedrooms || ''} data-bathrooms={details.bathrooms || ''} data-current-name={property.name}>
+		<div class="property-page" data-property-rate={property.pricePerNight} data-property-original-rate={property.originalPricePerNight} data-default-nights={property.defaultNights} data-default-guests={property.defaultGuests} data-max-guests={property.maxGuests} data-guest-capacity={details.guestCapacity || ''} data-bedrooms={details.bedrooms || ''} data-bathrooms={details.bathrooms || ''} data-current-name={property.name} data-stay-slug={property.slug} data-stay-image={`https://images.unsplash.com/${property.cardImage}?auto=format&fit=crop&w=800&q=85`} data-stay-city={property.city} data-stay-area={details.location.area}>
 			<header class="property-header">
 				<div class="property-header-inner">
 					<a class="property-brand" href="/" aria-label="GuesthouseBD home"><img src="/assets/logo/logo.png" alt="GuesthouseBD" /></a>
@@ -41,6 +42,7 @@ const formatMoney = (amount: number) => new Intl.NumberFormat('en-US', { style: 
 						</label>
 						<button class="quiet-action" type="button" data-share aria-label="Share this stay" data-property-aria="property.shareStay"><span aria-hidden="true">↗</span><span data-property-i18n="property.share">Share</span></button>
 						<button class="quiet-action save-action" type="button" data-save aria-label="Save this stay" data-property-aria="property.saveStay" aria-pressed="false"><span class="save-heart" aria-hidden="true">♡</span><span data-save-label data-property-i18n="property.save">Save</span></button>
+						<UserNav compact />
 					</div>
 				</div>
 			</header>
@@ -165,7 +167,22 @@ const formatMoney = (amount: number) => new Intl.NumberFormat('en-US', { style: 
 
 		<dialog class="reserve-dialog" id="reserve-dialog" aria-labelledby="reserve-dialog-title">
 			<div class="dialog-top"><p><strong data-property-i18n="property.yourStay">YOUR STAY</strong><span data-property-i18n="property.reservationDetails">Reservation details</span></p><button type="button" class="icon-button" data-close-reservation aria-label="Close reservation details" data-property-aria="property.close">×</button></div>
-			<div class="reserve-confirmation"><span class="confirmation-mark" aria-hidden="true">✓</span><p class="eyebrow" data-property-i18n="property.readyWhen">READY WHEN YOU ARE</p><h2 id="reserve-dialog-title" data-property-i18n="property.reviewStay">Review your stay</h2><p class="confirm-dates" data-confirm-dates></p><p class="confirm-guests" data-confirm-guests></p><div class="confirm-total"><span data-property-i18n="property.estimatedTotal">Estimated total</span><strong data-confirm-total></strong></div><p class="demo-disclaimer" data-property-i18n="property.reservationDisclaimer">This preview doesn't submit a booking or charge a payment method.</p><button type="button" class="reserve-button" data-close-reservation data-property-i18n="property.backToStay">Back to the stay</button></div>
+			<div class="reserve-confirmation">
+				<span class="confirmation-mark" aria-hidden="true">✓</span>
+				<p class="eyebrow" id="reserve-eyebrow">RESERVATION CONFIRMED</p>
+				<h2 id="reserve-dialog-title">Your stay is booked!</h2>
+				<div class="reserve-code-box" id="reserve-code-box">
+					<small>Confirmation Code</small>
+					<strong id="reserve-code-display">GBD-DH1001</strong>
+				</div>
+				<p class="confirm-dates" data-confirm-dates></p>
+				<p class="confirm-guests" data-confirm-guests></p>
+				<div class="confirm-total"><span data-property-i18n="property.estimatedTotal">Total confirmed</span><strong data-confirm-total></strong></div>
+				<div class="reserve-actions-row">
+					<a href="/dashboard/#bookings" class="reserve-dash-link">View in My Dashboard ↗</a>
+					<button type="button" class="reserve-button" data-close-reservation data-property-i18n="property.backToStay">Done</button>
+				</div>
+			</div>
 		</dialog>
 		<script src="../scripts/property.ts"></script>
 		<style>
@@ -353,8 +370,13 @@ const formatMoney = (amount: number) => new Intl.NumberFormat('en-US', { style: 
 			.confirm-guests{margin-top:4px;color:var(--property-muted);font-size:12px}
 			.confirm-total{display:flex;justify-content:space-between;gap:10px;margin-top:20px;padding-top:14px;border-top:1px solid var(--property-line);font-size:13px}
 			.confirm-total strong{font-size:15px}
-			.demo-disclaimer{margin-top:17px;color:#77756d;font-size:11px;line-height:1.55}
-			.reserve-confirmation .reserve-button{margin-top:17px}
+			.reserve-code-box{margin:14px 0 16px;padding:8px 12px;border:1px dashed #059669;border-radius:8px;background:#ecfdf5;text-align:center}
+			.reserve-code-box small{display:block;font-size:10px;text-transform:uppercase;color:#047857;letter-spacing:0.5px}
+			.reserve-code-box strong{display:block;font-size:15px;color:#065f46;font-family:monospace;letter-spacing:1px;margin-top:2px}
+			.reserve-actions-row{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+			.reserve-dash-link{display:flex;align-items:center;justify-content:center;height:42px;padding:0 16px;border-radius:6px;background:#059669;color:#fff;font-size:13px;font-weight:700;text-decoration:none}
+			.reserve-dash-link:hover{background:#047857}
+			.reserve-confirmation .reserve-button{margin-top:0}
 			@media(max-width:900px){.property-header-inner,.property-main,.property-footer{width:min(100% - 36px,720px)}.property-nav{gap:16px}.property-layout{grid-template-columns:minmax(0,1fr) 320px;gap:28px}.photo-gallery{grid-template-rows:155px 155px}}
 			@media(max-width:700px){.property-header-inner,.property-main,.property-footer{width:calc(100% - 32px)}.property-header-inner{height:62px;gap:10px}.property-brand{flex-basis:122px;width:122px}.property-nav{display:none}.header-actions{margin-left:auto}.quiet-action{gap:5px;padding:7px 8px;font-size:12px}.property-heading{align-items:flex-start;padding:22px 0 15px}.heading-copy{flex:1}.property-heading h1{font-size:25px;line-height:1.16}.property-rating{flex-wrap:wrap;gap:6px;margin-top:10px;font-size:12px}.photos-button{min-height:36px;padding:0 10px;font-size:11px}.photo-gallery{display:block;height:auto;aspect-ratio:1.2/1;border-radius:7px}.photo-tile{position:absolute;inset:0;width:100%;height:100%}.photo-tile:not(:first-child){display:none}.photo-count{position:absolute;right:10px;bottom:10px;z-index:2;display:block;padding:5px 8px;border-radius:4px;background:#171812b8;color:#fff;font-size:10px;font-variant-numeric:tabular-nums}.photo-count span{padding:0 3px;color:#ffffffa0}.property-layout{display:block;padding:28px 0 24px}.booking-column{position:static;margin:6px 0 28px}.booking-card{padding:18px}.booking-assurance{display:none}.property-content{display:flex;flex-direction:column}.overview-section{order:0}.booking-column{order:1}.description-section{order:2}.amenities-section{order:3}.reviews-section{order:4}.location-section{order:5}.host-section{order:6}.content-section{padding-bottom:28px}.booking-column .booking-card{display:none}.mobile-reserve-bar{position:fixed;right:0;bottom:0;left:0;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 16px calc(11px + env(safe-area-inset-bottom));border-top:1px solid var(--property-line);background:#fffffff2;backdrop-filter:blur(12px)}.mobile-reserve-bar>div{display:flex;flex-direction:column;gap:1px}.mobile-reserve-bar strong{font-size:17px}.mobile-reserve-bar>div>span{color:var(--property-muted);font-size:11px}.mobile-reserve-bar button{min-width:132px;min-height:44px;padding:0 18px;border:0;border-radius:4px;background:var(--property-accent);color:#fff;font:inherit;font-size:14px;font-weight:700;cursor:pointer}.property-footer{padding-bottom:calc(84px + env(safe-area-inset-bottom));font-size:11px}.property-footer span{max-width:45%;text-align:right}.toast-message{right:12px;bottom:calc(76px + env(safe-area-inset-bottom))}.gallery-stage{grid-template-columns:36px minmax(0,1fr) 36px;gap:4px;padding:14px 8px}.gallery-stage figure img{height:55vh}.gallery-arrow{width:34px;height:34px;font-size:20px}.gallery-dialog{width:calc(100% - 16px)}.all-amenities{grid-template-columns:1fr}.review-heading h2{font-size:48px}}
 			@media(max-width:440px){.property-heading{display:block}.photos-button{margin-top:12px}.property-heading h1{font-size:23px}.property-rating{font-size:11px}.amenity-preview{grid-template-columns:1fr;gap:13px}.review-highlights{grid-template-columns:1fr}.review-highlight{border-right:0;border-bottom:1px solid var(--property-line)}.review-highlight:last-child{border-bottom:0}.location-visual{height:220px}.host-section h2{font-size:15px}.property-footer{align-items:flex-start;flex-direction:column}.property-footer span{max-width:none;text-align:left}}

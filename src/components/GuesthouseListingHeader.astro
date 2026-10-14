@@ -1,6 +1,7 @@
 ---
 import i18next from 'i18next';
 import { languages, resources } from '../i18n/locales.js';
+import UserNav from './UserNav.astro';
 ---
 
 <header class="guesthouse-listing-header">
@@ -16,6 +17,7 @@ import { languages, resources } from '../i18n/locales.js';
 	<div class="guesthouse-listing-actions">
 		<button class="theme-toggle" type="button" data-listing-theme-toggle aria-label="Switch to dark theme" title="Switch to dark theme"><span data-listing-theme-icon aria-hidden="true">☾</span></button>
 		<a class="host-link" href="/#join" data-i18n="nav.host">List your place</a>
+		<UserNav compact />
 	</div>
 </header>
 
@@ -109,8 +111,15 @@ import { languages, resources } from '../i18n/locales.js';
 		const language = option.dataset.listingLanguage!;
 		savePreference('guesthouse-language', language);
 		translate.changeLanguage(language);
+		window.dispatchEvent(new CustomEvent('guesthouse:language-changed', { detail: { language } }));
 		languageMenu.hidden = true;
 		languageTrigger.setAttribute('aria-expanded', 'false');
+	});
+	window.addEventListener('guesthouse:language-changed', (e: any) => {
+		const lang = e?.detail?.language;
+		if (lang && lang !== translate.language) {
+			translate.changeLanguage(lang);
+		}
 	});
 	document.addEventListener('click', (event) => {
 		if (event.composedPath().includes(languageTrigger) || event.composedPath().includes(languageMenu)) return;

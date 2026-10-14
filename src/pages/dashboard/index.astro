@@ -1,0 +1,1721 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+import AuthModal from '../../components/AuthModal.astro';
+import '../../styles/dashboard.css';
+---
+
+<PageLayout title="My Dashboard — GuesthouseBD" description="Manage your bookings, saved wishlists, and member discounts." includeSiteScript={false}>
+	<div class="dashboard-page" id="dashboard-root">
+		<!-- Top Dashboard Navigation Bar -->
+		<header class="dash-topbar">
+			<div class="dash-topbar-inner">
+				<a href="/" class="dash-brand" aria-label="GuesthouseBD Home">
+					<img src="/assets/logo/logo.png" data-theme-logo-light="/assets/logo/logo.png" data-theme-logo-dark="/assets/logo/logo-darkmode.png" alt="GuesthouseBD" />
+				</a>
+
+				<nav class="dash-nav-links" aria-label="Quick links">
+					<a href="/" class="dash-link"><span>🌍</span> <span data-i18n="nav.all">Explore All</span></a>
+					<a href="/guestHouses/dhaka/" class="dash-link"><span>⌂</span> <span data-i18n="nav.stays">Dhaka Stays</span></a>
+					<a href="/#ride" class="dash-link"><span>↗</span> <span data-i18n="nav.ride">Pick &amp; drop</span></a>
+					<a href="/#people" class="dash-link"><span>✦</span> <span data-i18n="nav.guides">Guides</span></a>
+				</nav>
+
+				<div class="dash-user-controls">
+					<button class="theme-toggle-btn" type="button" data-dashboard-theme-toggle aria-label="Switch theme">
+						<span data-dashboard-theme-icon>☾</span>
+					</button>
+					<button type="button" class="dash-logout-btn" id="dash-logout">
+						<span>🚪</span>
+						<span data-i18n="nav.signOut">Sign Out</span>
+					</button>
+				</div>
+			</div>
+		</header>
+
+		<!-- Unauthenticated Gatekeeper Screen -->
+		<section class="dash-unauth-screen" id="dash-unauth" hidden style="display:flex; justify-content:center; align-items:center; min-height:65vh; padding:32px 16px;">
+			<div class="dash-empty-card" style="max-width: 460px; width:100%; padding: 42px 28px;">
+				<span class="dash-empty-icon">🔒</span>
+				<h1 style="font-size:22px; font-weight:700; margin-bottom:8px;" data-i18n="dashboard.unauthTitle">Member Access Required</h1>
+				<p style="margin-bottom:24px;" data-i18n="dashboard.unauthDesc">Sign in to your GuesthouseBD account to access your personal reservations, saved stays wishlist, and exclusive member discounts.</p>
+				<div style="display:flex; flex-direction:column; gap:10px;">
+					<button type="button" class="btn-primary-pill" data-open-auth="signin" style="justify-content:center;">
+						<span data-i18n="dashboard.signInBtn">Sign In to Dashboard</span>
+						<i>↗</i>
+					</button>
+					<a href="/" class="dash-link" style="justify-content:center;" data-i18n="dashboard.returnHome">Return to Homepage</a>
+				</div>
+			</div>
+		</section>
+
+		<!-- Authenticated Main Dashboard -->
+		<main class="dash-main" id="dash-authenticated" hidden>
+			<!-- Hero Profile Header Banner -->
+			<section class="dash-hero-card">
+				<div class="dash-profile-row">
+					<div class="dash-profile-meta-wrap">
+						<div class="dash-avatar-large">
+							<img src="" alt="" id="user-avatar-large" />
+							<span class="dash-status-dot"></span>
+						</div>
+						<div class="dash-profile-info">
+							<div class="dash-profile-heading">
+								<h1 id="user-display-title">Welcome back, Traveler</h1>
+								<span class="dash-tier-badge" id="user-tier-badge">Gold VIP</span>
+							</div>
+							<p class="dash-user-meta">
+								<span id="user-email-text">user@example.com</span>
+								<span class="meta-dot">·</span>
+								<span id="user-since-text">Member since March 2024</span>
+							</p>
+						</div>
+					</div>
+
+					<div class="dash-membership-card">
+						<div class="member-perk-header">
+							<span class="perk-star">✦</span>
+							<strong data-i18n="dashboard.activeMemberPrivilege">Active Member Privilege</strong>
+						</div>
+						<p class="member-perk-desc" id="user-perk-summary">15% VIP Club Rate Applied Automatically</p>
+						<small class="member-perk-note" data-i18n="dashboard.privilegeNote">Valid across all guesthouses, rides &amp; guide bookings</small>
+					</div>
+				</div>
+
+				<!-- Stats Summary Grid -->
+				<div class="dash-stats-grid">
+					<div class="stat-box">
+						<span class="stat-icon">📅</span>
+						<div>
+							<strong class="stat-value" id="stat-bookings">0</strong>
+							<span class="stat-label" data-i18n="dashboard.statBookings">Active Bookings</span>
+						</div>
+					</div>
+					<div class="stat-box">
+						<span class="stat-icon">♥</span>
+						<div>
+							<strong class="stat-value" id="stat-saved">0</strong>
+							<span class="stat-label" data-i18n="dashboard.statSaved">Saved Stays</span>
+						</div>
+					</div>
+					<div class="stat-box">
+						<span class="stat-icon">💰</span>
+						<div>
+							<strong class="stat-value" id="stat-saved-money">$120+</strong>
+							<span class="stat-label" data-i18n="dashboard.statSavings">Member Savings</span>
+						</div>
+					</div>
+					<div class="stat-box">
+						<span class="stat-icon">🧭</span>
+						<div>
+							<strong class="stat-value" id="stat-guides">1</strong>
+							<span class="stat-label" data-i18n="dashboard.statGuides">Guides Hired</span>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Segmented Pill Tabs Bar -->
+			<div class="dash-tabs-bar">
+				<nav class="dash-tabs-pill" aria-label="Dashboard sections">
+					<button type="button" class="dash-tab-btn is-active" data-tab-target="tab-bookings">
+						<span>📅</span>
+						<span data-i18n="dashboard.tabReservations">My Reservations</span>
+						<span class="tab-badge" id="tab-badge-bookings">0</span>
+					</button>
+					<button type="button" class="dash-tab-btn" data-tab-target="tab-saved">
+						<span>♥</span>
+						<span data-i18n="dashboard.tabSaved">Saved Stays</span>
+						<span class="tab-badge" id="tab-badge-saved">0</span>
+					</button>
+					<button type="button" class="dash-tab-btn" data-tab-target="tab-services">
+						<span>↗</span>
+						<span data-i18n="dashboard.tabServices">Guides &amp; Rides</span>
+					</button>
+					<button type="button" class="dash-tab-btn" data-tab-target="tab-settings">
+						<span>⚙</span>
+						<span data-i18n="dashboard.tabSettings">Settings</span>
+					</button>
+				</nav>
+			</div>
+
+			<!-- TAB 1: My Reservations -->
+			<section class="dash-panel-content" id="tab-bookings">
+				<div class="section-header-row">
+					<div>
+						<h2 data-i18n="dashboard.reservationsHeading">My Reservations</h2>
+						<p data-i18n="dashboard.reservationsSub">Confirmed guesthouse stays, check-in instructions, and itinerary codes.</p>
+					</div>
+					<a href="/guestHouses/dhaka/" class="btn-primary-pill" style="height:36px; font-size:12px; padding:0 16px;">
+						<span data-i18n="dashboard.bookStay">+ Book Stay</span>
+					</a>
+				</div>
+
+				<div class="bookings-list" id="bookings-container">
+					<!-- Dynamically rendered via client script -->
+				</div>
+
+				<div class="dash-empty-card" id="bookings-empty" hidden>
+					<span class="dash-empty-icon">🛌</span>
+					<h3 data-i18n="dashboard.noReservationsTitle">No reservations found yet</h3>
+					<p data-i18n="dashboard.noReservationsDesc">Explore verified guesthouses in Dhaka with member discounts applied automatically.</p>
+					<a href="/guestHouses/dhaka/" class="btn-primary-pill" data-i18n="dashboard.browseStays">Browse Dhaka Guesthouses ↗</a>
+				</div>
+			</section>
+
+			<!-- TAB 2: Saved Stays (Wishlist) -->
+			<section class="dash-panel-content" id="tab-saved" hidden>
+				<div class="section-header-row">
+					<div>
+						<h2 data-i18n="dashboard.savedHeading">Saved Guesthouses</h2>
+						<p data-i18n="dashboard.savedSub">Stays you've bookmarked for upcoming trips. Ready for quick booking.</p>
+					</div>
+				</div>
+
+				<div class="saved-grid" id="saved-container">
+					<!-- Dynamically rendered via client script -->
+				</div>
+
+				<div class="dash-empty-card" id="saved-empty" hidden>
+					<span class="dash-empty-icon">♡</span>
+					<h3 data-i18n="dashboard.noSavedTitle">Your wishlist is currently empty</h3>
+					<p data-i18n="dashboard.noSavedDesc">Click the heart icon on any guesthouse card while exploring to save it to your dashboard.</p>
+					<a href="/guestHouses/dhaka/" class="btn-primary-pill" data-i18n="dashboard.exploreStays">Explore Stays to Save ↗</a>
+				</div>
+			</section>
+
+			<!-- TAB 3: Guides & Rides -->
+			<section class="dash-panel-content" id="tab-services" hidden>
+				<div class="section-header-row">
+					<div>
+						<h2 data-i18n="dashboard.servicesHeading">Guides &amp; Transport Services</h2>
+						<p data-i18n="dashboard.servicesSub">Local guides booked and airport pick &amp; drop travel arrangements.</p>
+					</div>
+				</div>
+
+				<div class="bookings-list">
+					<article class="booking-card">
+						<div class="booking-image-wrap">
+							<img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&auto=format&fit=crop&q=80" alt="Farzana Ahmed" />
+							<span class="booking-status-tag confirmed">CONFIRMED</span>
+						</div>
+						<div class="booking-content-wrap">
+							<div class="booking-header-row">
+								<div>
+									<span class="booking-eyebrow">Local Tour Guide · Old Dhaka</span>
+									<h3 class="booking-stay-title">Farzana Ahmed · Old Dhaka Heritage Walk</h3>
+								</div>
+								<div class="booking-code-pill">
+									<small data-i18n="dashboard.bookingRef">Booking Ref</small>
+									<strong>GD-DH2024</strong>
+								</div>
+							</div>
+							<div class="booking-specs-strip" style="grid-template-columns: repeat(3, 1fr);">
+								<div class="spec-item">
+									<span class="spec-label">Tour Date</span>
+									<span class="spec-value">October 22, 2026</span>
+								</div>
+								<div class="spec-item">
+									<span class="spec-label">Time &amp; Type</span>
+									<span class="spec-value">10:00 AM · Full Day</span>
+								</div>
+								<div class="spec-item">
+									<span class="spec-label">Rate (VIP Perk)</span>
+									<span class="spec-value is-price">$28 USD</span>
+								</div>
+							</div>
+							<div class="booking-actions-row">
+								<button type="button" class="btn-view-stay" onclick="alert('Guide contact: +880 1711 002233\nMeeting Point: Ahsan Manzil Main Gate')">Contact Guide ↗</button>
+							</div>
+						</div>
+					</article>
+				</div>
+			</section>
+
+			<!-- TAB 4: Account Settings -->
+			<section class="dash-panel-content" id="tab-settings" hidden>
+				<div class="section-header-row">
+					<div>
+						<h2 data-i18n="dashboard.settingsTitle">Account Profile &amp; Preferences</h2>
+						<p data-i18n="dashboard.settingsSubtitle">Manage your traveler identity, contact details, language preferences, and membership privileges.</p>
+					</div>
+				</div>
+
+				<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+					<div class="dash-hero-card" style="margin-bottom:0;">
+						<h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px;" data-i18n="dashboard.settingsTitle">Traveler Profile</h3>
+						<div style="display:grid; gap: 12px;">
+							<div>
+								<label style="font-size: 11px; font-weight: 600; text-transform:uppercase; color: var(--dash-muted);" data-i18n="dashboard.fullName">Display Name</label>
+								<input type="text" id="edit-name" value="" style="width:100%; height:40px; padding:0 12px; margin-top:4px; border:1px solid var(--dash-border); border-radius:8px; background:var(--dash-surface-soft); color:var(--dash-ink); font:inherit;" />
+							</div>
+							<div>
+								<label style="font-size: 11px; font-weight: 600; text-transform:uppercase; color: var(--dash-muted);" data-i18n="dashboard.emailAddress">Email Address</label>
+								<input type="email" id="edit-email" value="" readonly style="width:100%; height:40px; padding:0 12px; margin-top:4px; border:1px solid var(--dash-border); border-radius:8px; background:var(--dash-surface-soft); color:var(--dash-muted); font:inherit;" />
+							</div>
+							<div>
+								<label style="font-size: 11px; font-weight: 600; text-transform:uppercase; color: var(--dash-muted);" data-i18n="dashboard.contactPhone">Contact Phone</label>
+								<input type="tel" id="edit-phone" value="+880 1712 345678" style="width:100%; height:40px; padding:0 12px; margin-top:4px; border:1px solid var(--dash-border); border-radius:8px; background:var(--dash-surface-soft); color:var(--dash-ink); font:inherit;" />
+							</div>
+							<div>
+								<label style="font-size: 11px; font-weight: 600; text-transform:uppercase; color: var(--dash-muted);" data-i18n="dashboard.languagePref">Language &amp; Regional Display</label>
+								<select id="settings-lang-select" style="width:100%; height:40px; padding:0 12px; margin-top:4px; border:1px solid var(--dash-border); border-radius:8px; background:var(--dash-surface-soft); color:var(--dash-ink); font:inherit; font-weight:600; cursor:pointer;">
+								</select>
+								<small style="display:block; margin-top:4px; font-size:11px; color:var(--dash-muted);" data-i18n="dashboard.languageDesc">Select your interface language for the dashboard, currency format, and stay details.</small>
+							</div>
+						</div>
+					</div>
+
+					<div class="dash-hero-card" style="margin-bottom:0;">
+						<h3 style="font-size: 16px; font-weight: 700; margin-bottom: 6px;" data-i18n="dashboard.testTiersTitle">Test Membership Tiers</h3>
+						<p style="font-size: 13px; color: var(--dash-muted); margin-bottom: 16px;" data-i18n="dashboard.testTiersDesc">Switch your active role to test dynamic rates across the website:</p>
+						<div style="display:grid; gap: 10px;">
+							<button type="button" class="dash-link" data-switch-role="vip" style="padding:12px; border:1px solid var(--dash-border); border-radius:10px; text-align:left; justify-content:space-between; background:var(--dash-surface-soft);">
+								<div>
+									<strong style="display:block; color:var(--dash-ink);" data-i18n="dashboard.goldVipTitle">⭐ Gold VIP Member (15% Off)</strong>
+									<small style="color:var(--dash-muted);" data-i18n="dashboard.goldVipSubtitle">Sarah Khan's luxury traveler account</small>
+								</div>
+								<span style="font-size:16px;">→</span>
+							</button>
+							<button type="button" class="dash-link" data-switch-role="traveler" style="padding:12px; border:1px solid var(--dash-border); border-radius:10px; text-align:left; justify-content:space-between; background:var(--dash-surface-soft);">
+								<div>
+									<strong style="display:block; color:var(--dash-ink);" data-i18n="dashboard.silverMemberTitle">🚀 Silver Member (10% Off)</strong>
+									<small style="color:var(--dash-muted);" data-i18n="dashboard.silverMemberSubtitle">Standard registered traveler tier</small>
+								</div>
+								<span style="font-size:16px;">→</span>
+							</button>
+							<button type="button" class="dash-link" data-switch-role="host" style="padding:12px; border:1px solid var(--dash-border); border-radius:10px; text-align:left; justify-content:space-between; background:var(--dash-surface-soft);">
+								<div>
+									<strong style="display:block; color:var(--dash-ink);" data-i18n="dashboard.diamondHostTitle">💎 Diamond Host (20% Off)</strong>
+									<small style="color:var(--dash-muted);" data-i18n="dashboard.diamondHostSubtitle">Host privileges and stay discounts</small>
+								</div>
+								<span style="font-size:16px;">→</span>
+							</button>
+						</div>
+					</div>
+				</div>
+			</section>
+		</main>
+
+		<!-- MODAL 1: View Exact Location & Directions -->
+		<div class="dash-modal-backdrop" id="modal-location" role="dialog" aria-modal="true" aria-labelledby="modal-loc-title">
+			<div class="dash-modal-sheet">
+				<div class="modal-header-row">
+					<div class="modal-header-content">
+						<small id="modal-loc-eyebrow">DHAKA · GULSHAN 2</small>
+						<h3 id="modal-loc-title" data-i18n="locModal.title">Property Location &amp; Directions</h3>
+					</div>
+					<button type="button" class="modal-close-btn" data-close-modal="modal-location" aria-label="Close modal">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+					</button>
+				</div>
+				<div class="modal-body-content">
+					<div class="modal-detail-card">
+						<span class="detail-label" data-i18n="locModal.streetAddress">Exact Street Address</span>
+						<div class="detail-value" id="modal-loc-address">House 24, Road 113, Gulshan-2, Dhaka 1212, Bangladesh</div>
+						<div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;">
+							<button type="button" class="btn-copy-address" id="btn-copy-address">
+								<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+								<span id="copy-btn-text" data-i18n="locModal.copyAddress">Copy Full Address</span>
+							</button>
+							<a href="#" target="_blank" rel="noopener noreferrer" class="btn-copy-address" id="link-google-maps">
+								<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+								<span data-i18n="locModal.openMaps">Open in Google Maps ↗</span>
+							</a>
+						</div>
+					</div>
+
+					<div class="modal-detail-card">
+						<span class="detail-label" data-i18n="locModal.checkInGate">Access &amp; Check-In Gate Info</span>
+						<div class="detail-value" style="font-size:13px; font-weight:normal; line-height:1.5;">
+							Guarded security entrance on Road 113. Present your booking confirmation code <strong id="modal-loc-code" style="color:var(--dash-brand); font-family:monospace;">GBD-DH8492</strong> to the concierge staff for immediate access card and room key handover.
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer-row">
+					<button type="button" class="btn-modal-ghost" data-close-modal="modal-location" data-i18n="locModal.close">Close</button>
+					<a href="#" target="_blank" rel="noopener noreferrer" class="btn-modal-primary" id="btn-modal-directions">
+						<span data-i18n="locModal.openNavigation">Open Map Navigation</span>
+						<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+					</a>
+				</div>
+			</div>
+		</div>
+
+		<!-- MODAL 2: Call Host -->
+		<div class="dash-modal-backdrop" id="modal-host" role="dialog" aria-modal="true" aria-labelledby="modal-host-title">
+			<div class="dash-modal-sheet">
+				<div class="modal-header-row">
+					<div class="modal-header-content">
+						<small id="modal-host-stay">City Lights Guest House</small>
+						<h3 id="modal-host-title" data-i18n="hostModal.title">Direct Host Contact</h3>
+					</div>
+					<button type="button" class="modal-close-btn" data-close-modal="modal-host" aria-label="Close modal">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+					</button>
+				</div>
+				<div class="modal-body-content">
+					<div class="modal-person-row">
+						<img id="modal-host-avatar" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80" alt="Host avatar" class="modal-person-avatar" />
+						<div class="modal-person-info">
+							<span class="modal-person-name" id="modal-host-name">Farhana Yasmin</span>
+							<span class="modal-person-tag">
+								<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+								<span data-i18n="hostModal.superhost">Verified Superhost · Under 15m response</span>
+							</span>
+						</div>
+					</div>
+
+					<div class="modal-action-buttons">
+						<a href="tel:+8801711234567" id="modal-host-tel-btn" class="btn-contact-call">
+							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+							<span data-i18n="hostModal.callHost">Direct Call</span>
+						</a>
+						<a href="https://wa.me/8801711234567" id="modal-host-wa-btn" target="_blank" rel="noopener noreferrer" class="btn-contact-whatsapp">
+							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+							<span data-i18n="hostModal.whatsAppHost">WhatsApp Chat</span>
+						</a>
+					</div>
+
+					<div class="modal-detail-card">
+						<span class="detail-label" data-i18n="dashboard.contactPhone">Host Phone Number</span>
+						<div class="detail-value" id="modal-host-phone-display" style="font-family:monospace; font-size:15px; color:var(--dash-ink);">+880 1711 234567</div>
+						<small style="color:var(--dash-muted); font-size:11px;">Hours: 7:00 AM – 11:30 PM (GMT+6) for check-in support and questions.</small>
+					</div>
+
+					<div class="modal-detail-card">
+						<span class="detail-label" data-i18n="hostModal.sendNote">Send Host a Quick Note</span>
+						<div style="display:flex; gap:8px;">
+							<input type="text" id="host-quick-msg" placeholder="e.g. Arriving around 3 PM, please hold keys..." style="flex-grow:1; height:38px; padding:0 12px; border:1px solid var(--dash-border); border-radius:8px; background:var(--dash-surface); color:var(--dash-ink); font:inherit; font-size:12px;" />
+							<button type="button" class="btn-modal-primary" id="btn-send-host-msg" style="height:38px; padding:0 14px; font-size:12px;" data-i18n="hostModal.sendNoteBtn">Send Note</button>
+						</div>
+						<div id="host-msg-sent-feedback" hidden style="color:var(--dash-emerald); font-size:12px; font-weight:600; margin-top:4px;" data-i18n="hostModal.noteSent">✓ Note transmitted directly to host's mobile device!</div>
+					</div>
+				</div>
+				<div class="modal-footer-row">
+					<button type="button" class="btn-modal-ghost" data-close-modal="modal-host" data-i18n="hostModal.done">Done</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- MODAL 3: Tour Guide (Booked vs Addon) -->
+		<div class="dash-modal-backdrop" id="modal-guide" role="dialog" aria-modal="true" aria-labelledby="modal-guide-title">
+			<div class="dash-modal-sheet">
+				<div class="modal-header-row">
+					<div class="modal-header-content">
+						<small id="modal-guide-eyebrow">Local Tour Assistant</small>
+						<h3 id="modal-guide-title">Tour Assistant &amp; Guide</h3>
+					</div>
+					<button type="button" class="modal-close-btn" data-close-modal="modal-guide" aria-label="Close modal">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+					</button>
+				</div>
+				<div class="modal-body-content">
+					<!-- Active Booked Guide State -->
+					<div id="guide-booked-section" hidden style="display:flex; flex-direction:column; gap:16px;">
+						<div class="modal-person-row">
+							<img id="guide-booked-avatar" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80" alt="Guide avatar" class="modal-person-avatar" />
+							<div class="modal-person-info">
+								<span class="modal-person-name" id="guide-booked-name">Farzana Ahmed</span>
+								<span class="modal-person-tag">
+									<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+									<span>Licensed Tour Specialist · English &amp; Bengali</span>
+								</span>
+							</div>
+						</div>
+
+						<div class="modal-action-buttons">
+							<a href="tel:+8801711002233" id="guide-booked-tel" class="btn-contact-call">
+								<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+								<span>Call Tour Guide</span>
+							</a>
+							<a href="https://wa.me/8801711002233" id="guide-booked-wa" target="_blank" rel="noopener noreferrer" class="btn-contact-whatsapp">
+								<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+								<span>WhatsApp Guide</span>
+							</a>
+						</div>
+
+						<div class="modal-detail-card">
+							<span class="detail-label">Itinerary &amp; Meeting Point</span>
+							<div class="detail-value" id="guide-booked-itinerary" style="font-size:13px; font-weight:normal; line-height:1.5;">
+								Old Dhaka Heritage Walk &amp; Ahsan Manzil visit. Guide meets you at the guesthouse lobby at 10:00 AM on your requested date.
+							</div>
+						</div>
+
+						<div style="display:flex; justify-content:flex-end;">
+							<button type="button" class="btn-action-pill btn-danger-pill" id="btn-remove-guide" style="margin-left:0;">Cancel Guide Service</button>
+						</div>
+					</div>
+
+					<!-- Unbooked Add-on Guide State -->
+					<div id="guide-unbooked-section" style="display:flex; flex-direction:column; gap:16px;">
+						<div class="modal-detail-card">
+							<span class="detail-label">Tour Assistant Exclusive Add-on</span>
+							<p style="font-size:13px; color:var(--dash-muted); margin:0; line-height:1.5;">
+								Enhance your stay with an experienced, certified bilingual guide who will show you hidden architectural gems, authentic dining, and transport you safely across Dhaka.
+							</p>
+						</div>
+
+						<div style="display:flex; flex-direction:column; gap:10px;">
+							<label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--dash-muted); letter-spacing:0.05em;">Choose Tour Experience</label>
+							<div style="display:grid; gap:8px;">
+								<label style="display:flex; align-items:center; justify-content:space-between; padding:12px; border:1px solid var(--dash-border); border-radius:10px; background:var(--dash-surface-soft); cursor:pointer;">
+									<div style="display:flex; align-items:center; gap:10px;">
+										<input type="radio" name="guide-package" value="heritage" checked style="accent-color:var(--dash-brand);" />
+										<div>
+											<strong style="display:block; font-size:13px; color:var(--dash-ink);">Old Dhaka Heritage &amp; Food Trail</strong>
+											<small style="color:var(--dash-muted);">Ahsan Manzil, Lalbagh Fort, Star Mosque, Biryani stop</small>
+										</div>
+									</div>
+									<strong style="color:var(--dash-emerald); font-size:13px;">$25 <small>/ day</small></strong>
+								</label>
+								<label style="display:flex; align-items:center; justify-content:space-between; padding:12px; border:1px solid var(--dash-border); border-radius:10px; background:var(--dash-surface-soft); cursor:pointer;">
+									<div style="display:flex; align-items:center; gap:10px;">
+										<input type="radio" name="guide-package" value="river" style="accent-color:var(--dash-brand);" />
+										<div>
+											<strong style="display:block; font-size:13px; color:var(--dash-ink);">Buriganga River &amp; Artisan Workshop Cruise</strong>
+											<small style="color:var(--dash-muted);">Private wooden boat cruise, Shankhari Bazaar artisans</small>
+										</div>
+									</div>
+									<strong style="color:var(--dash-emerald); font-size:13px;">$32 <small>/ day</small></strong>
+								</label>
+							</div>
+						</div>
+
+						<div class="modal-detail-card" style="background:rgba(5, 150, 105, 0.06); border-color:rgba(5, 150, 105, 0.25);">
+							<span class="detail-label" style="color:var(--dash-emerald);">Active Member Privilege</span>
+							<div class="detail-value" id="guide-discount-text" style="color:var(--dash-ink); font-size:13px;">
+								15% VIP discount applied automatically. Net: <strong>$21.25 USD</strong>.
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer-row">
+					<button type="button" class="btn-modal-ghost" data-close-modal="modal-guide">Close</button>
+					<button type="button" class="btn-modal-primary" id="btn-confirm-guide">
+						<span>Book &amp; Unlock Call Guide</span>
+						<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- MODAL 4: Driver / Airport Transport (Booked vs Addon) -->
+		<div class="dash-modal-backdrop" id="modal-driver" role="dialog" aria-modal="true" aria-labelledby="modal-driver-title">
+			<div class="dash-modal-sheet">
+				<div class="modal-header-row">
+					<div class="modal-header-content">
+						<small id="modal-driver-eyebrow">Executive Transport</small>
+						<h3 id="modal-driver-title">Chauffeur &amp; Airport Ride</h3>
+					</div>
+					<button type="button" class="modal-close-btn" data-close-modal="modal-driver" aria-label="Close modal">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+					</button>
+				</div>
+				<div class="modal-body-content">
+					<!-- Active Booked Driver State -->
+					<div id="driver-booked-section" hidden style="display:flex; flex-direction:column; gap:16px;">
+						<div class="modal-person-row">
+							<img id="driver-booked-avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80" alt="Driver avatar" class="modal-person-avatar" />
+							<div class="modal-person-info">
+								<span class="modal-person-name" id="driver-booked-name">Rafiqul Islam</span>
+								<span class="modal-person-tag">
+									<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+									<span>Executive Chauffeur · 4.95 ★ (350+ Trips)</span>
+								</span>
+							</div>
+						</div>
+
+						<div class="modal-action-buttons">
+							<a href="tel:+8801819556677" id="driver-booked-tel" class="btn-contact-call">
+								<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+								<span>Call Driver</span>
+							</a>
+							<a href="https://wa.me/8801819556677" id="driver-booked-wa" target="_blank" rel="noopener noreferrer" class="btn-contact-whatsapp">
+								<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+								<span>WhatsApp Driver</span>
+							</a>
+						</div>
+
+						<div class="modal-detail-card">
+							<span class="detail-label">Vehicle &amp; Dispatch Status</span>
+							<div class="detail-value" id="driver-booked-vehicle" style="font-size:13px; font-weight:600;">
+								Toyota Premio Executive (AC) · Dhaka Metro GHA-11-2345
+							</div>
+							<small id="driver-booked-status" style="color:var(--dash-emerald); font-weight:600; font-size:11px;">
+								● Status: On Standby for Flight Arrival &amp; Scheduled Pickup
+							</small>
+						</div>
+
+						<div style="display:flex; justify-content:flex-end;">
+							<button type="button" class="btn-action-pill btn-danger-pill" id="btn-remove-driver" style="margin-left:0;">Cancel Transport Service</button>
+						</div>
+					</div>
+
+					<!-- Unbooked Add-on Driver State -->
+					<div id="driver-unbooked-section" style="display:flex; flex-direction:column; gap:16px;">
+						<div class="modal-detail-card">
+							<span class="detail-label">Seamless Airport Pick &amp; Drop</span>
+							<p style="font-size:13px; color:var(--dash-muted); margin:0; line-height:1.5;">
+								Arrive in Dhaka with complete peace of mind. A private executive sedan driver awaits you right at Hazrat Shahjalal International Airport (DAC) arrival gate with your name board.
+							</p>
+						</div>
+
+						<div style="display:flex; flex-direction:column; gap:10px;">
+							<label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--dash-muted); letter-spacing:0.05em;">Choose Transport Option</label>
+							<div style="display:grid; gap:8px;">
+								<label style="display:flex; align-items:center; justify-content:space-between; padding:12px; border:1px solid var(--dash-border); border-radius:10px; background:var(--dash-surface-soft); cursor:pointer;">
+									<div style="display:flex; align-items:center; gap:10px;">
+										<input type="radio" name="driver-package" value="airport" checked style="accent-color:var(--dash-brand);" />
+										<div>
+											<strong style="display:block; font-size:13px; color:var(--dash-ink);">Airport Transfer (DAC Airport ↔ Stay)</strong>
+											<small style="color:var(--dash-muted);">Executive AC Sedan, toll charges included</small>
+										</div>
+									</div>
+									<strong style="color:var(--dash-emerald); font-size:13px;">$18 USD</strong>
+								</label>
+								<label style="display:flex; align-items:center; justify-content:space-between; padding:12px; border:1px solid var(--dash-border); border-radius:10px; background:var(--dash-surface-soft); cursor:pointer;">
+									<div style="display:flex; align-items:center; gap:10px;">
+										<input type="radio" name="driver-package" value="fullday" style="accent-color:var(--dash-brand);" />
+										<div>
+											<strong style="display:block; font-size:13px; color:var(--dash-ink);">Full-Day Private Chauffeur (8 Hours)</strong>
+											<small style="color:var(--dash-muted);">Unlimited Dhaka city travel, fuel &amp; driver included</small>
+										</div>
+									</div>
+									<strong style="color:var(--dash-emerald); font-size:13px;">$42 USD</strong>
+								</label>
+							</div>
+						</div>
+
+						<div class="modal-detail-card">
+							<span class="detail-label">Flight Number or Pickup Time (Optional)</span>
+							<input type="text" id="driver-flight-input" placeholder="e.g. Flight BG-085 (or 2:30 PM pickup)" style="height:38px; padding:0 12px; border:1px solid var(--dash-border); border-radius:8px; background:var(--dash-surface); color:var(--dash-ink); font:inherit; font-size:12px;" />
+						</div>
+
+						<div class="modal-detail-card" style="background:rgba(5, 150, 105, 0.06); border-color:rgba(5, 150, 105, 0.25);">
+							<span class="detail-label" style="color:var(--dash-emerald);">Active Member Privilege</span>
+							<div class="detail-value" id="driver-discount-text" style="color:var(--dash-ink); font-size:13px;">
+								15% VIP discount applied automatically. Net: <strong>$15.30 USD</strong>.
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer-row">
+					<button type="button" class="btn-modal-ghost" data-close-modal="modal-driver">Close</button>
+					<button type="button" class="btn-modal-primary" id="btn-confirm-driver">
+						<span>Book &amp; Unlock Call Driver</span>
+						<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- MODAL 5: Multi-Service Scheduler with Schedule Conflict Prevention -->
+		<div class="dash-modal-backdrop" id="modal-schedule-service" role="dialog" aria-modal="true" aria-labelledby="modal-sched-title">
+			<div class="dash-modal-sheet" style="max-width: 580px;">
+				<div class="modal-header-row">
+					<div class="modal-header-content">
+						<small id="modal-sched-stay">City Lights Guest House</small>
+						<h3 id="modal-sched-title" data-i18n="schedModal.title">Schedule Assistant, Guide or Wellness</h3>
+					</div>
+					<button type="button" class="modal-close-btn" data-close-modal="modal-schedule-service" aria-label="Close modal">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+					</button>
+				</div>
+				<div class="modal-body-content">
+					<!-- Category filter buttons -->
+					<div class="category-filter-strip" id="sched-category-filters">
+						<button type="button" class="cat-filter-btn is-active" data-cat="all" data-i18n="schedModal.allServices">All Services</button>
+						<button type="button" class="cat-filter-btn" data-cat="tour-guide" data-i18n="schedModal.tourGuides">Tour Guides</button>
+						<button type="button" class="cat-filter-btn" data-cat="travel-assistant" data-i18n="schedModal.personalAssistants">Personal Assistants</button>
+						<button type="button" class="cat-filter-btn" data-cat="wellness-spa" data-i18n="schedModal.spaWellness">Spa &amp; Wellness</button>
+						<button type="button" class="cat-filter-btn" data-cat="transport-chauffeur" data-i18n="schedModal.chauffeurs">Chauffeurs</button>
+					</div>
+
+					<!-- Provider selection list -->
+					<div class="provider-picker-list" id="sched-provider-list">
+						<!-- Dynamically generated from services.json -->
+					</div>
+
+					<!-- Date & Time Slot Selector -->
+					<div class="schedule-picker-row">
+						<div class="schedule-field">
+							<label for="sched-date-select" data-i18n="schedModal.selectDate">Select Date (During Stay)</label>
+							<select id="sched-date-select" class="schedule-select">
+								<!-- Populated dynamically based on booking check-in & check-out -->
+							</select>
+						</div>
+						<div class="schedule-field">
+							<label for="sched-slot-select" data-i18n="schedModal.chooseTimeSlot">Choose Time Slot</label>
+							<select id="sched-slot-select" class="schedule-select">
+								<option value="morning" data-i18n="schedModal.morning">Morning (09:00 – 13:00)</option>
+								<option value="afternoon" data-i18n="schedModal.afternoon">Afternoon (14:00 – 18:00)</option>
+								<option value="evening" data-i18n="schedModal.evening">Evening (18:30 – 22:30)</option>
+								<option value="fullday" data-i18n="schedModal.fullday">Full Day (09:00 – 21:00)</option>
+							</select>
+						</div>
+					</div>
+
+					<!-- Dynamic Real-Time Collision / Availability Banner -->
+					<div id="sched-conflict-banner" class="conflict-warning-banner" hidden>
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+						<span id="sched-conflict-text">Schedule Collision: An overlapping service is already booked for this date and time.</span>
+					</div>
+
+					<div id="sched-available-banner" class="slot-available-banner">
+						<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+						<span data-i18n="schedModal.availableNotice">Date &amp; time slot available for scheduling!</span>
+					</div>
+
+					<!-- Two-Gate Availability Guard Policy Notice -->
+					<div class="guard-policy-card">
+						<div class="guard-policy-header">
+							<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+							<span data-i18n="schedModal.guardPolicyTitle">Two-Gate Security Guard Policy</span>
+						</div>
+						<p data-i18n="schedModal.guardPolicyDesc">Assistant direct contact (Phone &amp; WhatsApp) is strictly unlocked only after payment settlement and provider confirmation acknowledgment.</p>
+						<div class="guard-steps-mini">
+							<div class="guard-step-item">
+								<span class="guard-step-num">1</span>
+								<span data-i18n="schedModal.gate1Title"><strong>Payment:</strong> Clears fee escrow.</span>
+							</div>
+							<div class="guard-step-item">
+								<span class="guard-step-num">2</span>
+								<span data-i18n="schedModal.gate2Title"><strong>Provider Flag:</strong> Confirmed acceptance.</span>
+							</div>
+						</div>
+					</div>
+
+					<!-- Payment Choice Option -->
+					<div style="display:flex; flex-direction:column; gap:6px;">
+						<label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--dash-muted);" data-i18n="schedModal.paymentActivation">Payment &amp; Guard Activation</label>
+						<div class="schedule-payment-choice">
+							<label class="payment-radio-option">
+								<input type="radio" name="sched-pay-choice" value="now" checked />
+								<div>
+									<strong data-i18n="schedModal.payNowOption">Pay Now &amp; Dispatch</strong>
+									<small data-i18n="schedModal.payNowSub">Settle member rate now. Booking is immediately flagged to assistant.</small>
+								</div>
+							</label>
+							<label class="payment-radio-option">
+								<input type="radio" name="sched-pay-choice" value="later" />
+								<div>
+									<strong data-i18n="schedModal.payLaterOption">Reserve &amp; Pay Later</strong>
+									<small data-i18n="schedModal.payLaterSub">Hold schedule slot. Contact details remain locked until payment.</small>
+								</div>
+							</label>
+						</div>
+					</div>
+
+					<!-- Rate summary with VIP Discount -->
+					<div class="modal-detail-card" style="background:rgba(5, 150, 105, 0.06); border-color:rgba(5, 150, 105, 0.25);">
+						<span class="detail-label" style="color:var(--dash-emerald);" data-i18n="schedModal.rateSummary">Total (Member Perk Applied)</span>
+						<div class="detail-value" id="sched-price-summary" style="color:var(--dash-ink); font-size:14px;">
+							Rate: <strong>$25 USD</strong> (15% VIP Discount Applied)
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer-row">
+					<button type="button" class="btn-modal-ghost" data-close-modal="modal-schedule-service" data-i18n="schedModal.cancelBtn">Cancel</button>
+					<button type="button" class="btn-modal-primary" id="btn-confirm-scheduled-service">
+						<span data-i18n="schedModal.confirmBtn">Confirm &amp; Schedule Service</span>
+						<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- MODAL 6: Service Payment & Guard Release -->
+		<div class="dash-modal-backdrop" id="modal-service-payment" role="dialog" aria-modal="true" aria-labelledby="modal-pay-title">
+			<div class="dash-modal-sheet" style="max-width: 500px;">
+				<div class="modal-header-row">
+					<div class="modal-header-content">
+						<small id="modal-pay-eyebrow" data-i18n="payModal.eyebrow">Gate 1: Payment Settlement</small>
+						<h3 id="modal-pay-title" data-i18n="payModal.title">Authorize Service Payment</h3>
+					</div>
+					<button type="button" class="modal-close-btn" data-close-modal="modal-service-payment" aria-label="Close modal">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+					</button>
+				</div>
+				<div class="modal-body-content">
+					<div class="modal-detail-card" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+						<div style="display:flex; align-items:center; gap:12px;">
+							<img id="pay-provider-avatar" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80" alt="Provider" style="width:44px; height:44px; border-radius:50%; object-fit:cover; border:2px solid var(--dash-brand);" />
+							<div>
+								<span id="pay-service-category" style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--dash-brand); letter-spacing:0.05em;">Tour Assistant</span>
+								<h4 id="pay-service-title" style="margin:2px 0 0; font-size:13px; font-weight:700; color:var(--dash-ink);">Old Dhaka Heritage Trail</h4>
+								<span id="pay-provider-name" style="font-size:11px; color:var(--dash-muted);">Proposed to Farzana Ahmed</span>
+							</div>
+						</div>
+						<div style="text-align:right;">
+							<span style="font-size:10px; text-transform:uppercase; color:var(--dash-muted); font-weight:600; display:block;" data-i18n="payModal.amountDue">Amount Due</span>
+							<strong id="pay-amount-display" style="font-size:18px; color:var(--dash-emerald);">$25 USD</strong>
+						</div>
+					</div>
+
+					<div class="guard-policy-card" style="background:rgba(59, 130, 246, 0.05); border-color:rgba(59, 130, 246, 0.2);">
+						<div class="guard-policy-header" style="color:#2563eb;">
+							<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+							<span data-i18n="payModal.noticeTitle">Guard Workflow Notice</span>
+						</div>
+						<p data-i18n="payModal.noticeDesc">Settling this payment clears Gate 1. Your request will be instantly flagged to the assistant for confirmation. Direct contact channels unlock immediately upon acceptance.</p>
+					</div>
+
+					<div style="display:flex; flex-direction:column; gap:8px;">
+						<label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--dash-muted);" data-i18n="payModal.chooseMethod">Choose Payment Method</label>
+						<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+							<label style="display:flex; align-items:center; gap:8px; padding:10px; border-radius:8px; border:1px solid var(--dash-border); background:var(--dash-surface-soft); cursor:pointer;">
+								<input type="radio" name="pay-method" value="card" checked style="accent-color:var(--dash-brand);" />
+								<span style="font-size:12px; font-weight:600; color:var(--dash-ink);" data-i18n="payModal.cardMethod">💳 Card Payment</span>
+							</label>
+							<label style="display:flex; align-items:center; gap:8px; padding:10px; border-radius:8px; border:1px solid var(--dash-border); background:var(--dash-surface-soft); cursor:pointer;">
+								<input type="radio" name="pay-method" value="mfs" style="accent-color:var(--dash-brand);" />
+								<span style="font-size:12px; font-weight:600; color:var(--dash-ink);" data-i18n="payModal.mfsMethod">📱 bKash / Nagad</span>
+							</label>
+						</div>
+					</div>
+
+					<div class="modal-detail-card" style="display:flex; flex-direction:column; gap:4px;">
+						<span class="detail-label" data-i18n="payModal.protectedTitle">Protected Transaction</span>
+						<div style="font-size:11px; color:var(--dash-muted); line-height:1.4;" data-i18n="payModal.protectedDesc">
+							🔒 Escrow Shield: Funds are protected and 100% refundable if the provider cannot acknowledge your schedule.
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer-row">
+					<button type="button" class="btn-modal-ghost" data-close-modal="modal-service-payment" data-i18n="payModal.cancel">Cancel</button>
+					<button type="button" class="btn-modal-primary" id="btn-submit-service-payment">
+						<span data-i18n="payModal.authorizePay">Authorize &amp; Pay Now</span>
+						<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<SiteFooter />
+		<AuthModal />
+	</div>
+</PageLayout>
+
+<script>
+	import i18next from 'i18next';
+	import { languages, resources } from '../../i18n/locales.js';
+	import { authManager, type UserProfile, type BookingRecord, type SavedStayRecord, type TourGuideService, type DriverService, type StayBookedService } from '../../scripts/auth';
+	import servicesData from '../../data/services.json';
+
+	const unauthScreen = document.getElementById('dash-unauth');
+	const authMain = document.getElementById('dash-authenticated');
+	const logoutBtn = document.getElementById('dash-logout');
+
+	// Profile elements
+	const userAvatarLarge = document.getElementById('user-avatar-large') as HTMLImageElement | null;
+	const userDisplayTitle = document.getElementById('user-display-title');
+	const userTierBadge = document.getElementById('user-tier-badge');
+	const userEmailText = document.getElementById('user-email-text');
+	const userPerkSummary = document.getElementById('user-perk-summary');
+	const editName = document.getElementById('edit-name') as HTMLInputElement | null;
+	const editEmail = document.getElementById('edit-email') as HTMLInputElement | null;
+
+	// Stat elements
+	const statBookings = document.getElementById('stat-bookings');
+	const statSaved = document.getElementById('stat-saved');
+	const tabBadgeBookings = document.getElementById('tab-badge-bookings');
+	const tabBadgeSaved = document.getElementById('tab-badge-saved');
+
+	// Containers
+	const bookingsContainer = document.getElementById('bookings-container');
+	const bookingsEmpty = document.getElementById('bookings-empty');
+	const savedContainer = document.getElementById('saved-container');
+	const savedEmpty = document.getElementById('saved-empty');
+
+	// Active modal context
+	let activeBookingId: string | null = null;
+	let selectedCategory: string = 'all';
+	let selectedProviderId: string = servicesData.providers[0]?.id || '';
+	let activePaymentData: { bookingId: string; serviceId: string; price: number; title: string; providerName: string } | null = null;
+
+	// i18n setup & helpers
+	const getSavedLang = () => {
+		try {
+			return localStorage.getItem('guesthouse-language') || 'en';
+		} catch {
+			return 'en';
+		}
+	};
+
+	let currentLang = getSavedLang();
+	const dashI18n = i18next.createInstance();
+	dashI18n.init({
+		lng: currentLang,
+		fallbackLng: 'en',
+		resources,
+		interpolation: { escapeValue: false },
+		initImmediate: false
+	});
+
+	const t = (key: string, options?: any) => dashI18n.t(key, options);
+	const getLocaleInfo = () => languages.find((l) => l.code === dashI18n.language) || languages[0];
+
+	// Settings tab language select
+	const settingsLangSelect = document.getElementById('settings-lang-select') as HTMLSelectElement | null;
+
+	function populateLanguageUI() {
+		if (settingsLangSelect) {
+			settingsLangSelect.innerHTML = languages
+				.map((l: any) => `<option value="${l.code}" ${l.code === dashI18n.language ? 'selected' : ''}>${l.label} (${l.code.toUpperCase()})</option>`)
+				.join('');
+		}
+	}
+
+	function applyDashboardTranslations() {
+		document.documentElement.lang = getLocaleInfo().htmlLang;
+		document.title = t('dashboard.title');
+
+		document.querySelectorAll<HTMLElement>('[data-i18n]').forEach((el) => {
+			const key = el.dataset.i18n;
+			if (key) {
+				el.textContent = t(key);
+			}
+		});
+
+		document.querySelectorAll<HTMLInputElement>('[data-i18n-placeholder]').forEach((el) => {
+			const key = el.dataset.i18nPlaceholder;
+			if (key) {
+				el.placeholder = t(key);
+			}
+		});
+
+		document.querySelectorAll<HTMLElement>('[data-i18n-aria-label]').forEach((el) => {
+			const key = el.dataset.i18nAriaLabel;
+			if (key) {
+				el.setAttribute('aria-label', t(key));
+			}
+		});
+
+		populateLanguageUI();
+	}
+
+	function changeDashboardLanguage(code: string) {
+		if (!languages.some((l) => l.code === code)) return;
+		currentLang = code;
+		try {
+			localStorage.setItem('guesthouse-language', code);
+		} catch {}
+		dashI18n.changeLanguage(code);
+		applyDashboardTranslations();
+		window.dispatchEvent(new CustomEvent('guesthouse:language-changed', { detail: { language: code } }));
+		const user = authManager.getUser();
+		renderDashboard(user);
+	}
+
+	settingsLangSelect?.addEventListener('change', () => {
+		if (settingsLangSelect.value) {
+			changeDashboardLanguage(settingsLangSelect.value);
+		}
+	});
+
+	window.addEventListener('guesthouse:language-changed', (e: any) => {
+		const lang = e?.detail?.language;
+		if (lang && lang !== dashI18n.language) {
+			dashI18n.changeLanguage(lang);
+			applyDashboardTranslations();
+			const user = authManager.getUser();
+			renderDashboard(user);
+		}
+	});
+
+	window.addEventListener('storage', (e) => {
+		if (e.key === 'guesthouse-language' && e.newValue && e.newValue !== dashI18n.language) {
+			dashI18n.changeLanguage(e.newValue);
+			applyDashboardTranslations();
+			const user = authManager.getUser();
+			renderDashboard(user);
+		}
+	});
+
+	// Initial translation pass
+	applyDashboardTranslations();
+
+	// Theme toggle
+	const themeBtn = document.querySelector('[data-dashboard-theme-toggle]');
+	const themeIcon = document.querySelector('[data-dashboard-theme-icon]');
+
+	function syncTheme() {
+		const currentTheme = document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+		document.documentElement.dataset.theme = currentTheme;
+		if (themeIcon) themeIcon.textContent = currentTheme === 'dark' ? '☀' : '☾';
+	}
+	syncTheme();
+
+	themeBtn?.addEventListener('click', () => {
+		const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+		document.documentElement.dataset.theme = next;
+		try {
+			localStorage.setItem('guesthouse-theme', next);
+		} catch {}
+		syncTheme();
+	});
+
+	// Modal Controls
+	function openModal(id: string) {
+		const modal = document.getElementById(id);
+		if (modal) {
+			modal.classList.add('is-open');
+			document.body.style.overflow = 'hidden';
+		}
+	}
+
+	function closeModal(id: string) {
+		const modal = document.getElementById(id);
+		if (modal) {
+			modal.classList.remove('is-open');
+			document.body.style.overflow = '';
+		}
+	}
+
+	// Close buttons
+	document.querySelectorAll<HTMLButtonElement>('[data-close-modal]').forEach((btn) => {
+		btn.addEventListener('click', () => {
+			const targetId = btn.dataset.closeModal;
+			if (targetId) closeModal(targetId);
+		});
+	});
+
+	// Backdrop click close
+	document.querySelectorAll<HTMLElement>('.dash-modal-backdrop').forEach((backdrop) => {
+		backdrop.addEventListener('click', (e) => {
+			if (e.target === backdrop) {
+				closeModal(backdrop.id);
+			}
+		});
+	});
+
+	// ESC key close
+	window.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape') {
+			document.querySelectorAll('.dash-modal-backdrop.is-open').forEach((m) => {
+				closeModal(m.id);
+			});
+		}
+	});
+
+	function renderDashboard(user: UserProfile | null) {
+		if (!user) {
+			if (unauthScreen) unauthScreen.hidden = false;
+			if (authMain) authMain.hidden = true;
+			return;
+		}
+
+		if (unauthScreen) unauthScreen.hidden = true;
+		if (authMain) authMain.hidden = false;
+
+		// Populate Profile
+		if (userAvatarLarge) {
+			userAvatarLarge.src = user.avatar;
+			userAvatarLarge.alt = user.name;
+		}
+		if (userDisplayTitle) userDisplayTitle.textContent = `${t('dashboard.welcomeBack')}, ${user.name}`;
+		if (userTierBadge) {
+			userTierBadge.textContent = user.tier;
+			userTierBadge.className = `dash-tier-badge is-${user.role}`;
+		}
+		if (userEmailText) userEmailText.textContent = user.email;
+		if (userPerkSummary) userPerkSummary.textContent = `${Math.round(user.discountRate * 100)}% ${t('dashboard.memberDiscountActive')}`;
+
+		if (editName) editName.value = user.name;
+		if (editEmail) editEmail.value = user.email;
+
+		renderBookings();
+		renderSavedStays();
+	}
+
+	function renderBookings() {
+		const bookings = authManager.getBookings();
+		const count = bookings.filter((b) => b.status !== 'cancelled').length;
+		if (statBookings) statBookings.textContent = String(count);
+		if (tabBadgeBookings) tabBadgeBookings.textContent = String(count);
+
+		if (!bookingsContainer) return;
+
+		if (bookings.length === 0) {
+			bookingsContainer.innerHTML = '';
+			if (bookingsEmpty) bookingsEmpty.hidden = false;
+			return;
+		}
+
+		if (bookingsEmpty) bookingsEmpty.hidden = true;
+
+		bookingsContainer.innerHTML = bookings
+			.map((b) => {
+				const isCancelled = b.status === 'cancelled';
+				const services = b.services || [];
+
+				return `
+			<article class="booking-card ${isCancelled ? 'is-cancelled' : ''}">
+				<div class="booking-image-wrap">
+					<img src="${b.stayImage}" alt="${b.stayName}" loading="lazy" />
+					<span class="booking-status-tag ${b.status}">
+						<span>●</span>
+						<span>${b.status.toUpperCase()}</span>
+					</span>
+				</div>
+				<div class="booking-content-wrap">
+					<div class="booking-header-row">
+						<div>
+							<span class="booking-eyebrow">${b.city} · ${b.area}</span>
+							<h3 class="booking-stay-title">${b.stayName}</h3>
+						</div>
+						<div class="booking-code-pill">
+							<small>${t('dashboard.confirmationCode')}</small>
+							<strong>${b.confirmationCode}</strong>
+						</div>
+					</div>
+
+					<div class="booking-specs-strip">
+						<div class="spec-item">
+							<span class="spec-label">${t('dashboard.checkIn')}</span>
+							<span class="spec-value">${b.checkIn}</span>
+						</div>
+						<div class="spec-item">
+							<span class="spec-label">${t('dashboard.checkOut')}</span>
+							<span class="spec-value">${b.checkOut}</span>
+						</div>
+						<div class="spec-item">
+							<span class="spec-label">${t('dashboard.duration')}</span>
+							<span class="spec-value">${b.nights} ${b.nights === 1 ? 'Night' : 'Nights'}</span>
+						</div>
+						<div class="spec-item">
+							<span class="spec-label">${t('dashboard.guests')}</span>
+							<span class="spec-value">${b.guests}</span>
+						</div>
+						<div class="spec-item">
+							<span class="spec-label">${t('dashboard.total')}</span>
+							<span class="spec-value is-price">$${b.totalPrice} ${b.currency}</span>
+						</div>
+					</div>
+
+					<!-- Scheduled Services Timeline Strip -->
+					${
+						services.length > 0
+							? `
+						<div class="booking-services-strip">
+							<div class="services-strip-header">
+								<span class="services-strip-title">
+									<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+									<span>${t('dashboard.tabServices')} (${services.length})</span>
+								</span>
+								<button type="button" class="btn-action-pill btn-service-add" style="height:26px; font-size:10px; padding:0 8px;" data-open-scheduler="${b.id}">
+									<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+									<span>${t('dashboard.scheduleService')}</span>
+								</button>
+							</div>
+							<div class="services-items-grid">
+								${services
+									.map((s) => {
+										const isPaid = s.paymentStatus === 'paid';
+										const isAck = !!s.acknowledgedByProvider;
+										const isAvailable = isPaid && isAck;
+										const cardClass = !isPaid ? 'is-unpaid' : !isAck ? 'is-pending-flag' : 'is-available';
+										const cleanPhone = s.providerPhone.replace(/\s+/g, '');
+										const digits = s.providerPhone.replace(/[^0-9]/g, '');
+
+										return `
+									<div class="service-chip-card ${cardClass}">
+										<div class="service-chip-top">
+											<div class="service-chip-main">
+												<img src="${s.providerAvatar}" alt="${s.providerName}" class="service-chip-avatar" />
+												<div class="service-chip-info">
+													<span class="service-chip-tag">${s.categoryName}</span>
+													<strong class="service-chip-name">${s.providerName}</strong>
+													<span class="service-chip-time">${s.date} · ${s.timeSlotLabel}</span>
+												</div>
+											</div>
+											${
+												!isPaid
+													? `<span class="service-guard-badge is-unpaid" title="Payment required to activate service proposal">🔒 ${t('dashboard.guardPaymentPending')} ($${s.price})</span>`
+													: !isAck
+														? `<span class="service-guard-badge is-pending-flag" title="Payment verified! Awaiting proposed assistant's acknowledgment flag">⏳ ${t('dashboard.guardAwaitingFlag')}</span>`
+														: `<span class="service-guard-badge is-active" title="Assistant confirmed availability & acknowledged"><span class="pulse-indicator"></span><span>${t('dashboard.guardAvailable')}</span></span>`
+											}
+										</div>
+
+										<div class="service-chip-bottom">
+											${
+												isAvailable
+													? `
+												<div style="display:flex; align-items:center; gap:6px;">
+													<a href="tel:${cleanPhone}" class="btn-chip-call" title="Call ${s.providerName} directly">
+														<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+														<span>${t('dashboard.call')} ${s.providerName.split(' ')[0]}</span>
+													</a>
+													<a href="https://wa.me/${digits}" target="_blank" rel="noopener noreferrer" class="btn-chip-call" style="background:#25d366; padding:0 7px;" title="WhatsApp ${s.providerName}">
+														<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+													</a>
+												</div>
+												`
+													: !isPaid
+														? `
+												<span class="service-locked-contact" title="Direct contact is locked until payment is settled and the assistant accepts">
+													<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+													<span>${t('dashboard.contactLocked')}</span>
+												</span>
+												`
+														: `
+												<span class="service-locked-contact is-pending" title="Payment confirmed! Contact unlocks as soon as provider acknowledges">
+													<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+													<span>${t('dashboard.awaitingFlag')}</span>
+												</span>
+												`
+											}
+
+											<div class="service-chip-actions">
+												${
+													!isPaid
+														? `
+													<button type="button" class="btn-chip-pay" data-open-payment="${b.id}:${s.id}:${s.price}:${encodeURIComponent(s.title)}:${encodeURIComponent(s.providerName)}:${encodeURIComponent(s.providerAvatar)}:${encodeURIComponent(s.categoryName)}" title="Settle payment for this service">
+														<span>💳 ${t('dashboard.pay')} $${s.price}</span>
+													</button>
+													`
+														: !isAck
+															? `
+													<button type="button" class="btn-chip-ack" data-ack-service="${b.id}:${s.id}" title="Demo Provider Action: Click to flag acknowledgment as ${s.providerName}">
+														<span>${t('dashboard.providerFlagBtn')}</span>
+													</button>
+													`
+															: `
+													<button type="button" class="btn-chip-ack is-active" data-ack-service="${b.id}:${s.id}" title="Provider has acknowledged (click to re-toggle for testing)">
+														<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+														<span>${t('dashboard.flagged')}</span>
+													</button>
+													`
+												}
+												<button type="button" class="btn-chip-delete" data-remove-stay-service="${b.id}:${s.id}" title="Cancel this scheduled service">
+													<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+												</button>
+											</div>
+										</div>
+
+										<div class="service-guard-note">
+											${
+												!isPaid
+													? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>Guard: Pay $${s.price} to submit proposal to ${s.providerName.split(' ')[0]}.</span>`
+													: !isAck
+														? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span>Guard: Paid. Awaiting acknowledgment flag from ${s.providerName}.</span>`
+														: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span style="color:var(--dash-emerald); font-weight:600;">Guard Cleared: Confirmed by ${s.providerName}. Direct contact ready!</span>`
+											}
+										</div>
+									</div>
+								`;
+									})
+									.join('')}
+							</div>
+						</div>
+						`
+							: `
+						<div class="booking-services-strip" style="background:transparent; border-style:dotted;">
+							<div style="display:flex; align-items:center; justify-content:space-between; width:100%; flex-wrap:wrap; gap:8px;">
+								<span style="font-size:12px; color:var(--dash-muted);">No travel assistants or chauffeurs scheduled yet.</span>
+								<button type="button" class="btn-action-pill btn-service-add" style="height:28px; font-size:11px;" data-open-scheduler="${b.id}">
+									<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+									<span>${t('dashboard.scheduleService')}</span>
+								</button>
+							</div>
+						</div>
+						`
+					}
+
+					<div class="booking-actions-row">
+						<a href="/guestHouses/${b.city.toLowerCase()}/${b.staySlug}/" class="btn-action-pill btn-primary-dark">
+							<span>${t('dashboard.viewProperty')}</span>
+							<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+						</a>
+
+						<button type="button" class="btn-action-pill btn-secondary-pill" data-open-location="${b.id}">
+							<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+							<span>${t('dashboard.viewExactLocation')}</span>
+						</button>
+
+						<button type="button" class="btn-action-pill btn-secondary-pill" data-open-host="${b.id}">
+							<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+							<span>${t('dashboard.callHost')}</span>
+						</button>
+
+						<button type="button" class="btn-action-pill btn-service-add" data-open-scheduler="${b.id}">
+							<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+							<span>${t('dashboard.scheduleService')}</span>
+						</button>
+
+						${
+							!isCancelled
+								? `<button type="button" class="btn-action-pill btn-danger-pill" data-cancel-booking="${b.id}">${t('dashboard.cancel')}</button>`
+								: `<span class="cancelled-pill">${t('dashboard.cancelled')}</span>`
+						}
+					</div>
+				</div>
+			</article>
+		`;
+			})
+			.join('');
+
+		// Attach Listeners: Open Multi-Service Scheduler
+		bookingsContainer.querySelectorAll<HTMLButtonElement>('[data-open-scheduler]').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const id = btn.dataset.openScheduler;
+				if (!id) return;
+				activeBookingId = id;
+				const b = bookings.find((item) => item.id === id);
+				if (!b) return;
+
+				const stayTitle = document.getElementById('modal-sched-stay');
+				if (stayTitle) stayTitle.textContent = `${b.stayName} (${b.checkIn} – ${b.checkOut})`;
+
+				// Populate Date dropdown with stay dates
+				const dateSelect = document.getElementById('sched-date-select') as HTMLSelectElement | null;
+				if (dateSelect) {
+					dateSelect.innerHTML = '';
+					const start = new Date(`${b.checkIn}T00:00:00`);
+					const end = new Date(`${b.checkOut}T00:00:00`);
+					const cur = new Date(start);
+					while (cur <= end) {
+						const dateStr = cur.toISOString().split('T')[0];
+						const opt = document.createElement('option');
+						opt.value = dateStr;
+						opt.textContent = `${dateStr} (${cur.toLocaleDateString(getLocaleInfo().intl, { weekday: 'short', month: 'short', day: 'numeric' })})`;
+						dateSelect.appendChild(opt);
+						cur.setDate(cur.getDate() + 1);
+					}
+				}
+
+				selectedCategory = 'all';
+				document.querySelectorAll('#sched-category-filters .cat-filter-btn').forEach((cBtn) => {
+					cBtn.classList.toggle('is-active', (cBtn as HTMLElement).dataset.cat === 'all');
+				});
+
+				renderSchedulerProviders();
+				checkLiveConflict();
+				openModal('modal-schedule-service');
+			});
+		});
+
+		// Attach Listeners: Remove Stay Service
+		bookingsContainer.querySelectorAll<HTMLButtonElement>('[data-remove-stay-service]').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const raw = btn.dataset.removeStayService;
+				if (!raw) return;
+				const [bookingId, serviceId] = raw.split(':');
+				if (confirm('Cancel this scheduled service? Full refund applies for members.')) {
+					authManager.removeServiceFromStay(bookingId, serviceId);
+					renderBookings();
+				}
+			});
+		});
+
+		// Attach Listeners: Open Service Payment Modal
+		bookingsContainer.querySelectorAll<HTMLButtonElement>('[data-open-payment]').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const raw = btn.dataset.openPayment;
+				if (!raw) return;
+				const [bookingId, serviceId, priceStr, titleEnc, providerNameEnc, avatarEnc, catNameEnc] = raw.split(':');
+				const title = decodeURIComponent(titleEnc || '');
+				const providerName = decodeURIComponent(providerNameEnc || '');
+				const avatar = decodeURIComponent(avatarEnc || '');
+				const catName = decodeURIComponent(catNameEnc || '');
+				const price = parseFloat(priceStr) || 0;
+
+				activePaymentData = { bookingId, serviceId, price, title, providerName };
+
+				const titleEl = document.getElementById('pay-service-title');
+				const nameEl = document.getElementById('pay-provider-name');
+				const avatarEl = document.getElementById('pay-provider-avatar') as HTMLImageElement | null;
+				const catEl = document.getElementById('pay-service-category');
+				const amountEl = document.getElementById('pay-amount-display');
+
+				if (titleEl) titleEl.textContent = title;
+				if (nameEl) nameEl.textContent = `Proposed to ${providerName}`;
+				if (avatarEl && avatar) avatarEl.src = avatar;
+				if (catEl) catEl.textContent = catName;
+				if (amountEl) amountEl.textContent = `$${price} USD`;
+
+				openModal('modal-service-payment');
+			});
+		});
+
+		// Attach Listeners: Toggle Provider Acknowledgment Flag (Demo Simulation)
+		bookingsContainer.querySelectorAll<HTMLButtonElement>('[data-ack-service]').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const raw = btn.dataset.ackService;
+				if (!raw) return;
+				const [bookingId, serviceId] = raw.split(':');
+				authManager.toggleServiceAcknowledgment(bookingId, serviceId);
+				renderBookings();
+			});
+		});
+
+		// Attach Listeners: Location Modal
+		bookingsContainer.querySelectorAll<HTMLButtonElement>('[data-open-location]').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const id = btn.dataset.openLocation;
+				const b = bookings.find((item) => item.id === id);
+				if (!b) return;
+
+				const eyebrow = document.getElementById('modal-loc-eyebrow');
+				const addressEl = document.getElementById('modal-loc-address');
+				const codeEl = document.getElementById('modal-loc-code');
+				const mapLink = document.getElementById('link-google-maps') as HTMLAnchorElement | null;
+				const directionsBtn = document.getElementById('btn-modal-directions') as HTMLAnchorElement | null;
+
+				const fullAddress = b.address || `House 24, Road 113, ${b.area}, ${b.city} 1212, Bangladesh`;
+				const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(b.stayName + ' ' + b.area + ' ' + b.city + ' Bangladesh')}`;
+
+				if (eyebrow) eyebrow.textContent = `${b.city.toUpperCase()} · ${b.area.toUpperCase()}`;
+				if (addressEl) addressEl.textContent = fullAddress;
+				if (codeEl) codeEl.textContent = b.confirmationCode;
+				if (mapLink) mapLink.href = mapsUrl;
+				if (directionsBtn) directionsBtn.href = mapsUrl;
+
+				openModal('modal-location');
+			});
+		});
+
+		// Attach Listeners: Host Modal
+		bookingsContainer.querySelectorAll<HTMLButtonElement>('[data-open-host]').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const id = btn.dataset.openHost;
+				const b = bookings.find((item) => item.id === id);
+				if (!b) return;
+
+				const stayEl = document.getElementById('modal-host-stay');
+				const nameEl = document.getElementById('modal-host-name');
+				const avatarEl = document.getElementById('modal-host-avatar') as HTMLImageElement | null;
+				const phoneEl = document.getElementById('modal-host-phone-display');
+				const telBtn = document.getElementById('modal-host-tel-btn') as HTMLAnchorElement | null;
+				const waBtn = document.getElementById('modal-host-wa-btn') as HTMLAnchorElement | null;
+				const feedback = document.getElementById('host-msg-sent-feedback');
+
+				const hostName = b.hostName || 'Farhana Yasmin';
+				const hostAvatar = b.hostAvatar || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80';
+				const hostPhone = b.hostPhone || '+880 1711 234567';
+				const cleanPhone = hostPhone.replace(/\s+/g, '');
+				const digits = hostPhone.replace(/[^0-9]/g, '');
+
+				if (stayEl) stayEl.textContent = b.stayName;
+				if (nameEl) nameEl.textContent = hostName;
+				if (avatarEl) {
+					avatarEl.src = hostAvatar;
+					avatarEl.alt = hostName;
+				}
+				if (phoneEl) phoneEl.textContent = hostPhone;
+				if (telBtn) telBtn.href = `tel:${cleanPhone}`;
+				if (waBtn) waBtn.href = `https://wa.me/${digits}`;
+				if (feedback) feedback.hidden = true;
+
+				openModal('modal-host');
+			});
+		});
+
+		// Attach cancel listeners
+		bookingsContainer.querySelectorAll<HTMLButtonElement>('[data-cancel-booking]').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const id = btn.dataset.cancelBooking;
+				if (id && confirm('Cancel this reservation? Full refund applies for member cancellations.')) {
+					authManager.cancelBooking(id);
+					renderBookings();
+				}
+			});
+		});
+	}
+
+	// ---------------- Scheduler Modal Logic & Conflict Validation ---------------- //
+	function renderSchedulerProviders() {
+		const list = document.getElementById('sched-provider-list');
+		if (!list) return;
+
+		const filtered = selectedCategory === 'all'
+			? servicesData.providers
+			: servicesData.providers.filter((p) => p.categoryId === selectedCategory);
+
+		if (!filtered.some((p) => p.id === selectedProviderId)) {
+			selectedProviderId = filtered[0]?.id || '';
+		}
+
+		list.innerHTML = filtered
+			.map(
+				(p) => `
+			<div class="provider-card-option ${p.id === selectedProviderId ? 'is-selected' : ''}" data-provider-id="${p.id}">
+				<div class="provider-card-left">
+					<img src="${p.photo}" alt="${p.name}" class="provider-thumb" />
+					<div class="provider-text">
+						<div class="provider-text-name">${p.name} <span style="color:var(--dash-brand); font-size:11px;">★ ${p.rating}</span></div>
+						<div class="provider-text-role">${p.badge} · Speaks ${p.languages.join(', ')}</div>
+						<div class="provider-text-spec">${p.title}</div>
+					</div>
+				</div>
+				<div class="provider-price-box">
+					<strong>$${p.basePrice}</strong>
+					<small>/ session</small>
+				</div>
+			</div>
+		`
+			)
+			.join('');
+
+		list.querySelectorAll<HTMLElement>('[data-provider-id]').forEach((card) => {
+			card.addEventListener('click', () => {
+				selectedProviderId = card.dataset.providerId || '';
+				list.querySelectorAll('.provider-card-option').forEach((el) => {
+					el.classList.toggle('is-selected', (el as HTMLElement).dataset.providerId === selectedProviderId);
+				});
+				updateSchedulerPrice();
+				checkLiveConflict();
+			});
+		});
+
+		updateSchedulerPrice();
+	}
+
+	function updateSchedulerPrice() {
+		const provider = servicesData.providers.find((p) => p.id === selectedProviderId);
+		const summary = document.getElementById('sched-price-summary');
+		if (!provider || !summary) return;
+
+		const user = authManager.getUser();
+		const perk = authManager.getMemberDiscount(provider.basePrice);
+		summary.innerHTML = `Standard: <del style="color:var(--dash-muted);">$${provider.basePrice}</del> · Member Rate: <strong>$${perk.discountedTotal} USD</strong> <span style="color:var(--dash-emerald); font-size:12px;">(${perk.percentage}% ${user?.tier || 'Member'} Perk)</span>`;
+	}
+
+	function checkLiveConflict() {
+		if (!activeBookingId) return;
+		const booking = authManager.getBookings().find((b) => b.id === activeBookingId);
+		if (!booking) return;
+
+		const dateSelect = document.getElementById('sched-date-select') as HTMLSelectElement | null;
+		const slotSelect = document.getElementById('sched-slot-select') as HTMLSelectElement | null;
+		const conflictBanner = document.getElementById('sched-conflict-banner');
+		const conflictText = document.getElementById('sched-conflict-text');
+		const availableBanner = document.getElementById('sched-available-banner');
+		const confirmBtn = document.getElementById('btn-confirm-scheduled-service') as HTMLButtonElement | null;
+
+		const date = dateSelect?.value || '';
+		const slotId = (slotSelect?.value as any) || 'morning';
+
+		const conflict = authManager.checkServiceConflict(booking.services || [], date, slotId);
+
+		if (conflict.hasConflict) {
+			if (conflictBanner) conflictBanner.hidden = false;
+			if (conflictText) conflictText.textContent = conflict.message || 'Schedule Collision on this date/time!';
+			if (availableBanner) availableBanner.hidden = true;
+			if (confirmBtn) {
+				confirmBtn.disabled = true;
+				confirmBtn.style.opacity = '0.5';
+				confirmBtn.style.cursor = 'not-allowed';
+			}
+		} else {
+			if (conflictBanner) conflictBanner.hidden = true;
+			if (availableBanner) availableBanner.hidden = false;
+			if (confirmBtn) {
+				confirmBtn.disabled = false;
+				confirmBtn.style.opacity = '1';
+				confirmBtn.style.cursor = 'pointer';
+			}
+		}
+	}
+
+	// Category filter button clicks
+	document.querySelectorAll('#sched-category-filters .cat-filter-btn').forEach((btn) => {
+		btn.addEventListener('click', () => {
+			document.querySelectorAll('#sched-category-filters .cat-filter-btn').forEach((b) => b.classList.remove('is-active'));
+			btn.classList.add('is-active');
+			selectedCategory = (btn as HTMLElement).dataset.cat || 'all';
+			renderSchedulerProviders();
+			checkLiveConflict();
+		});
+	});
+
+	// Date & Slot change listeners
+	document.getElementById('sched-date-select')?.addEventListener('change', checkLiveConflict);
+	document.getElementById('sched-slot-select')?.addEventListener('change', checkLiveConflict);
+
+	// Confirm Scheduled Service Button
+	document.getElementById('btn-confirm-scheduled-service')?.addEventListener('click', () => {
+		if (!activeBookingId) return;
+		const provider = servicesData.providers.find((p) => p.id === selectedProviderId);
+		if (!provider) return;
+
+		const dateSelect = document.getElementById('sched-date-select') as HTMLSelectElement | null;
+		const slotSelect = document.getElementById('sched-slot-select') as HTMLSelectElement | null;
+		const date = dateSelect?.value || '';
+		const slotId = (slotSelect?.value as any) || 'morning';
+		const slotLabel = slotSelect?.options[slotSelect.selectedIndex]?.textContent || 'Morning (09:00 – 13:00)';
+
+		const category = servicesData.categories.find((c) => c.id === provider.categoryId);
+		const perk = authManager.getMemberDiscount(provider.basePrice);
+
+		const payChoiceEl = document.querySelector('input[name="sched-pay-choice"]:checked') as HTMLInputElement | null;
+		const payChoice = payChoiceEl?.value || 'now';
+		const paymentStatus: 'paid' | 'unpaid' = payChoice === 'now' ? 'paid' : 'unpaid';
+
+		const result = authManager.addServiceToStay(activeBookingId, {
+			providerId: provider.id,
+			categoryId: provider.categoryId as any,
+			categoryName: category?.name || 'Personal Assistant',
+			title: provider.title,
+			providerName: provider.name,
+			providerPhone: provider.phone,
+			providerAvatar: provider.photo,
+			date,
+			timeSlotId: slotId,
+			timeSlotLabel: slotLabel,
+			price: perk.discountedTotal,
+			currency: 'USD',
+			paymentStatus,
+			acknowledgedByProvider: false
+		});
+
+		if (result.success) {
+			closeModal('modal-schedule-service');
+			renderBookings();
+		} else {
+			alert(result.error || 'Cannot schedule service due to conflict.');
+		}
+	});
+
+	// Authorize & Submit Service Payment
+	document.getElementById('btn-submit-service-payment')?.addEventListener('click', () => {
+		if (!activePaymentData) return;
+		authManager.markServicePaid(activePaymentData.bookingId, activePaymentData.serviceId);
+		closeModal('modal-service-payment');
+		renderBookings();
+	});
+
+	// Copy Address in Location Modal
+	const copyAddressBtn = document.getElementById('btn-copy-address');
+	const copyTextSpan = document.getElementById('copy-btn-text');
+	copyAddressBtn?.addEventListener('click', async () => {
+		const address = document.getElementById('modal-loc-address')?.textContent || '';
+		try {
+			await navigator.clipboard.writeText(address);
+			if (copyTextSpan) copyTextSpan.textContent = t('locModal.addressCopied');
+			copyAddressBtn.classList.add('is-copied');
+			setTimeout(() => {
+				if (copyTextSpan) copyTextSpan.textContent = t('locModal.copyAddress');
+				copyAddressBtn.classList.remove('is-copied');
+			}, 2000);
+		} catch {
+			if (copyTextSpan) copyTextSpan.textContent = t('locModal.addressCopied');
+		}
+	});
+
+	// Send Host Quick Message
+	const sendHostMsgBtn = document.getElementById('btn-send-host-msg');
+	const hostMsgInput = document.getElementById('host-quick-msg') as HTMLInputElement | null;
+	const hostFeedback = document.getElementById('host-msg-sent-feedback');
+	sendHostMsgBtn?.addEventListener('click', () => {
+		if (hostMsgInput && hostMsgInput.value.trim().length > 0) {
+			if (hostFeedback) hostFeedback.hidden = false;
+			hostMsgInput.value = '';
+			setTimeout(() => {
+				if (hostFeedback) hostFeedback.hidden = true;
+			}, 3000);
+		}
+	});
+
+	function renderSavedStays() {
+		const saved = authManager.getSavedStays();
+		if (statSaved) statSaved.textContent = String(saved.length);
+		if (tabBadgeSaved) tabBadgeSaved.textContent = String(saved.length);
+
+		if (!savedContainer) return;
+
+		if (saved.length === 0) {
+			savedContainer.innerHTML = '';
+			if (savedEmpty) savedEmpty.hidden = false;
+			return;
+		}
+
+		if (savedEmpty) savedEmpty.hidden = true;
+
+		savedContainer.innerHTML = saved
+			.map(
+				(s) => `
+			<article class="saved-card">
+				<div class="saved-image-wrap">
+					<img src="${s.image}" alt="${s.name}" loading="lazy" />
+					<button type="button" class="saved-heart-btn" data-remove-saved="${s.slug}" aria-label="Remove from saved">♥</button>
+					<span class="saved-rating-tag">★ ${s.rating.toFixed(1)} (${s.reviewCount})</span>
+				</div>
+				<div class="saved-body">
+					<div>
+						<span class="saved-area">${s.area}, ${s.city}</span>
+						<h4 class="saved-title">${s.name}</h4>
+					</div>
+					<div class="saved-footer">
+						<span class="saved-price"><strong>$${s.price}</strong> <small>/ night</small></span>
+						<a href="/guestHouses/${s.city.toLowerCase()}/${s.slug}/" class="btn-view-stay" style="height:32px; padding:0 12px; font-size:11px;">${t('dashboard.viewProperty')} ↗</a>
+					</div>
+				</div>
+			</article>
+		`
+			)
+			.join('');
+
+		// Attach remove listeners
+		savedContainer.querySelectorAll<HTMLButtonElement>('[data-remove-saved]').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const slug = btn.dataset.removeSaved;
+				if (slug) {
+					authManager.toggleSaveStay({ slug, city: '', name: '', image: '', area: '', price: 0, rating: 0, reviewCount: 0 });
+					renderSavedStays();
+				}
+			});
+		});
+	}
+
+	// Tab Switching logic
+	const tabButtons = document.querySelectorAll<HTMLButtonElement>('.dash-tab-btn');
+	const tabPanels = document.querySelectorAll<HTMLElement>('.dash-panel-content');
+
+	function activateTab(tabId: string) {
+		tabButtons.forEach((btn) => {
+			const isMatch = btn.dataset.tabTarget === tabId;
+			btn.classList.toggle('is-active', isMatch);
+		});
+		tabPanels.forEach((panel) => {
+			panel.hidden = panel.id !== tabId;
+		});
+	}
+
+	tabButtons.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			const targetId = btn.dataset.tabTarget;
+			if (targetId) activateTab(targetId);
+		});
+	});
+
+	// Check hash in URL
+	if (window.location.hash) {
+		const hash = window.location.hash.replace('#', '');
+		if (hash === 'saved') activateTab('tab-saved');
+		else if (hash === 'bookings') activateTab('tab-bookings');
+		else if (hash === 'services') activateTab('tab-services');
+		else if (hash === 'settings') activateTab('tab-settings');
+	}
+
+	// Sign out action
+	logoutBtn?.addEventListener('click', async () => {
+		await authManager.signOut();
+		window.location.href = '/';
+	});
+
+	// Membership Tier Demo Switcher
+	document.querySelectorAll<HTMLButtonElement>('[data-switch-role]').forEach((btn) => {
+		btn.addEventListener('click', async () => {
+			const role = btn.dataset.switchRole as 'traveler' | 'vip' | 'host';
+			await authManager.signInWithDemo(role);
+		});
+	});
+
+	// Initial subscription
+	authManager.subscribe(renderDashboard);
+	window.addEventListener('guesthouse:bookings-changed', renderBookings);
+	window.addEventListener('guesthouse:saved-changed', renderSavedStays);
+</script>

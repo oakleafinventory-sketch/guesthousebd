@@ -4,11 +4,79 @@ import homeContent from '../data/home.json';
 
 <section class="panel" id="join">
 	<div class="join">
-		<div>
-			<h2 data-i18n="join.title">Create your account</h2><p style="color: var(--mut); margin-top: 8px" data-i18n="join.description">Join with the app you already use.</p>
+		<!-- Logged Out View -->
+		<div class="join-logged-out" id="join-logged-out">
+			<h2 data-i18n="join.title">Create your account</h2>
+			<p style="color: var(--mut); margin-top: 8px" data-i18n="join.description">Join with the app you already use.</p>
 			<div class="sso" id="sso"></div>
-			<form class="field" onsubmit="return false"><input type="email" placeholder="Or use your email" aria-label="Email" data-i18n-placeholder="join.email" data-i18n-aria-label="join.emailLabel" /><button data-i18n="join.continue">Continue</button></form>
+			<form class="field" id="join-fast-form">
+				<input type="email" id="join-quick-email" placeholder="Or use your email" aria-label="Email" data-i18n-placeholder="join.email" data-i18n-aria-label="join.emailLabel" required />
+				<button type="submit" data-i18n="join.continue">Continue</button>
+			</form>
 		</div>
+
+		<!-- Logged In View -->
+		<div class="join-logged-in" id="join-logged-in" hidden>
+			<h2>Welcome back, <span id="join-user-name">Traveler</span>!</h2>
+			<p style="color: var(--mut); margin-top: 8px">
+				Your <strong id="join-user-tier" style="color: var(--brand)">Member Account</strong> is active. You have access to exclusive rates, saved wishlists, and your private booking dashboard.
+			</p>
+			<div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px;">
+				<a href="/dashboard/" class="btn" style="background: var(--brand); color: #fff; border: 0;">
+					<span>Go to My Dashboard</span>
+					<i>↗</i>
+				</a>
+				<a href="/dashboard/#saved" class="btn">
+					<span>View Wishlist</span>
+				</a>
+			</div>
+		</div>
+
 		<img src={homeContent.media.accountJoinImage} alt="" />
 	</div>
 </section>
+
+<script>
+	import { authManager } from '../scripts/auth';
+
+	const loggedOutWrap = document.getElementById('join-logged-out');
+	const loggedInWrap = document.getElementById('join-logged-in');
+	const userNameSpan = document.getElementById('join-user-name');
+	const userTierSpan = document.getElementById('join-user-tier');
+	const quickForm = document.getElementById('join-fast-form');
+	const quickEmail = document.getElementById('join-quick-email') as HTMLInputElement | null;
+
+	authManager.subscribe((user) => {
+		if (user) {
+			if (loggedOutWrap) loggedOutWrap.hidden = true;
+			if (loggedInWrap) loggedInWrap.hidden = false;
+			if (userNameSpan) userNameSpan.textContent = user.name;
+			if (userTierSpan) userTierSpan.textContent = user.tier;
+		} else {
+			if (loggedOutWrap) loggedOutWrap.hidden = false;
+			if (loggedInWrap) loggedInWrap.hidden = true;
+		}
+	});
+
+	quickForm?.addEventListener('submit', (e) => {
+		e.preventDefault();
+		const email = quickEmail?.value.trim() || '';
+		const modal = document.getElementById('auth-modal') as HTMLDialogElement | null;
+		if (modal) {
+			const signinEmail = document.getElementById('signin-email') as HTMLInputElement | null;
+			const signupEmail = document.getElementById('signup-email') as HTMLInputElement | null;
+			if (signinEmail) signinEmail.value = email;
+			if (signupEmail) signupEmail.value = email;
+			modal.showModal();
+		}
+	});
+
+	// Connect SSO buttons
+	document.getElementById('sso')?.addEventListener('click', (e) => {
+		const btn = (e.target as HTMLElement).closest('button');
+		if (btn) {
+			const modal = document.getElementById('auth-modal') as HTMLDialogElement | null;
+			modal?.showModal();
+		}
+	});
+</script>

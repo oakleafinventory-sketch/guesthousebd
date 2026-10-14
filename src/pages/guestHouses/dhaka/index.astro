@@ -4,6 +4,7 @@ import { getPropertyPath, properties } from "../../../data/property-details";
 import amenityFilters from "../../../data/amenity-filters.json";
 import GuesthouseListingHeader from "../../../components/GuesthouseListingHeader.astro";
 import SiteFooter from "../../../components/SiteFooter.astro";
+import AuthModal from "../../../components/AuthModal.astro";
 
 const stays = properties.filter((property) => property.city === "Dhaka");
 function matchesAmenity(
@@ -100,6 +101,26 @@ const formatMoney = (amount: number) =>
 						>Change search <span aria-hidden="true">↗</span></a
 					>
 				</section>
+				<div class="dhaka-auth-banner-wrap">
+					<div class="member-perk-banner" id="dhaka-member-banner" hidden>
+						<div class="banner-inner">
+							<div class="banner-text">
+								<span class="banner-badge" id="member-banner-tier">✦ Member Perk</span>
+								<strong id="member-banner-message">You are saving with exclusive member rates on all stays!</strong>
+							</div>
+							<a href="/dashboard/" class="banner-link">View Dashboard ↗</a>
+						</div>
+					</div>
+					<div class="guest-perk-banner" id="dhaka-guest-banner">
+						<div class="banner-inner">
+							<div class="banner-text">
+								<span class="banner-badge-guest">🔒 Member Exclusive Rates</span>
+								<span>Sign in to unlock up to 15% VIP discounts and save stays to your dashboard.</span>
+							</div>
+							<button type="button" class="banner-btn" data-open-auth="signin">Sign In / Join ↗</button>
+						</div>
+					</div>
+				</div>
 				<section
 					class="amenity-toolbar"
 					aria-label="Filter guesthouses by amenities"
@@ -180,6 +201,11 @@ const formatMoney = (amount: number) =>
 										{group.listings.map((stay) => (
 											<article
 												class="stay-card"
+												data-stay-slug={stay.slug}
+												data-stay-name={stay.name}
+												data-stay-price={stay.pricePerNight * stay.defaultNights}
+												data-stay-image={`https://images.unsplash.com/${stay.cardImage}?auto=format&fit=crop&w=600&q=85`}
+												data-stay-area={stay.area}
 												data-amenities={availableAmenities
 													.filter((filter) =>
 														matchesAmenity(
@@ -213,6 +239,7 @@ const formatMoney = (amount: number) =>
 													<button
 														class="favorite-button"
 														type="button"
+														data-stay-slug={stay.slug}
 														aria-label={`Save ${stay.name}`}
 														aria-pressed="false"
 													>
@@ -292,7 +319,9 @@ const formatMoney = (amount: number) =>
 			</main>
 		</div>
 		<SiteFooter />
+		<AuthModal />
 		<script>
+			import { authManager } from "../../../scripts/auth";
 			const amenityDialog = document.querySelector<HTMLDialogElement>(
 				"#amenity-filter-dialog",
 			)!;
@@ -407,20 +436,56 @@ const formatMoney = (amount: number) =>
 				updateAmenityFilters();
 			});
 
-			document.querySelectorAll(".favorite-button").forEach((button) => {
+			document.querySelectorAll<HTMLButtonElement>(".favorite-button").forEach((button) => {
+				const staySlug = button.dataset.staySlug || "";
+				const card = button.closest<HTMLElement>(".stay-card");
+				const stayName = card?.dataset.stayName || card?.querySelector("h3")?.textContent || "";
+				const stayImage = card?.dataset.stayImage || card?.querySelector("img")?.src || "";
+				const stayPrice = Number(card?.dataset.stayPrice) || 60;
+				const stayArea = card?.dataset.stayArea || "Dhaka";
+
+				if (staySlug) {
+					const isSaved = authManager.isSaved(staySlug);
+					button.setAttribute("aria-pressed", String(isSaved));
+					button.textContent = isSaved ? "♥" : "♡";
+				}
+
 				button.addEventListener("click", () => {
-					const saved =
-						button.getAttribute("aria-pressed") !== "true";
-					button.setAttribute("aria-pressed", String(saved));
-					button.textContent = saved ? "♥" : "♡";
-					const stayName =
-						button.closest(".stay-card")?.querySelector("h3")
-							?.textContent || "";
+					const isNowSaved = authManager.toggleSaveStay({
+						slug: staySlug,
+						name: stayName,
+						city: "Dhaka",
+						area: stayArea,
+						price: stayPrice,
+						rating: 4.9,
+						reviewCount: 35,
+						image: stayImage,
+					});
+					button.setAttribute("aria-pressed", String(isNowSaved));
+					button.textContent = isNowSaved ? "♥" : "♡";
 					button.setAttribute(
 						"aria-label",
-						`${saved ? "Remove" : "Save"} ${stayName}`,
+						`${isNowSaved ? "Remove" : "Save"} ${stayName}`,
 					);
 				});
+			});
+
+			// Member banner reactivity
+			const memberBanner = document.getElementById("dhaka-member-banner");
+			const guestBanner = document.getElementById("dhaka-guest-banner");
+			const bannerTier = document.getElementById("member-banner-tier");
+			const bannerMsg = document.getElementById("member-banner-message");
+
+			authManager.subscribe((user) => {
+				if (user) {
+					if (memberBanner) memberBanner.hidden = false;
+					if (guestBanner) guestBanner.hidden = true;
+					if (bannerTier) bannerTier.textContent = `✦ ${user.tier}`;
+					if (bannerMsg) bannerMsg.textContent = `Your ${user.discountLabel} is active on all guesthouses!`;
+				} else {
+					if (memberBanner) memberBanner.hidden = true;
+					if (guestBanner) guestBanner.hidden = false;
+				}
 			});
 		</script>
 		<dialog
@@ -977,6 +1042,78 @@ const formatMoney = (amount: number) =>
 				}
 				.amenity-filter-dialog {
 					padding: 18px;
+				}
+				.dhaka-auth-banner-wrap {
+					margin: 0 0 16px;
+				}
+				.member-perk-banner {
+					padding: 12px 18px;
+					border-radius: 12px;
+					background: #ecfdf5;
+					border: 1px solid #a7f3d0;
+					color: #065f46;
+				}
+				.guest-perk-banner {
+					padding: 12px 18px;
+					border-radius: 12px;
+					background: var(--surface-soft);
+					border: 1px dashed var(--border);
+					color: var(--ink);
+				}
+				.banner-inner {
+					display: flex;
+					align-items: center;
+					justify-content: space-between;
+					gap: 16px;
+				}
+				.banner-text {
+					display: flex;
+					align-items: center;
+					gap: 10px;
+					font-size: 13px;
+				}
+				.banner-badge {
+					font-size: 11px;
+					font-weight: 700;
+					padding: 2px 8px;
+					border-radius: 4px;
+					background: #059669;
+					color: #fff;
+					text-transform: uppercase;
+				}
+				.banner-badge-guest {
+					font-size: 11px;
+					font-weight: 700;
+					padding: 2px 8px;
+					border-radius: 4px;
+					background: var(--brand);
+					color: #fff;
+					text-transform: uppercase;
+				}
+				.banner-link {
+					font-size: 12px;
+					font-weight: 700;
+					color: #047857;
+					white-space: nowrap;
+				}
+				.banner-btn {
+					height: 32px;
+					padding: 0 12px;
+					border: 0;
+					border-radius: 6px;
+					background: var(--brand);
+					color: #fff;
+					font-size: 12px;
+					font-weight: 700;
+					cursor: pointer;
+					white-space: nowrap;
+				}
+				@media (max-width: 600px) {
+					.banner-inner {
+						flex-direction: column;
+						align-items: flex-start;
+						gap: 10px;
+					}
 				}
 			}
 			@media (max-width: 360px) {

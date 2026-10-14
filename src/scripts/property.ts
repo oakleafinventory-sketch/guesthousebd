@@ -2,6 +2,7 @@ import i18next from 'i18next';
 import { animate } from 'motion';
 import { languages, resources } from '../i18n/locales.js';
 import { propertyMessages } from '../i18n/property-locales.js';
+import { authManager } from './auth';
 
 const localizedResources = Object.fromEntries(languages.map(({ code }) => {
 	const languageCode = code as keyof typeof resources;
@@ -97,7 +98,18 @@ languageSelect.addEventListener('change', () => {
 	propertyI18n.changeLanguage(nextLanguage.code).then(() => {
 		applyPropertyLanguage();
 		updateBooking();
+		window.dispatchEvent(new CustomEvent('guesthouse:language-changed', { detail: { language: nextLanguage.code } }));
 	});
+});
+
+window.addEventListener('guesthouse:language-changed', (e: any) => {
+	const lang = e?.detail?.language;
+	if (lang && lang !== propertyI18n.language) {
+		propertyI18n.changeLanguage(lang).then(() => {
+			applyPropertyLanguage();
+			updateBooking();
+		});
+	}
 });
 
 const animateIn = (element: Element | null, options: { duration?: number; delay?: number } = {}) => {
@@ -257,7 +269,10 @@ function updateBooking() {
 	const end = new Date(`${checkOut.value}T00:00:00`);
 	const nights = Math.max(1, Math.round((end.getTime() - start.getTime()) / 86400000));
 	const original = nights * originalNightlyPrice;
-	const total = nights * nightlyPrice;
+	const baseTotal = nights * nightlyPrice;
+	const user = authManager.getUser();
+	const memberPerk = authManager.getMemberDiscount(baseTotal);
+	const total = user ? memberPerk.discountedTotal : baseTotal;
 	const discount = original - total;
 	const guestLabel = tProperty(guests === 1 ? 'guestsOne' : 'guestsOther', { count: guests });
 	const locale = localeInfo().intl;
@@ -291,6 +306,47 @@ getElements<HTMLButtonElement>('[data-guest-step]').forEach((button) => button.a
 	guests = Math.max(1, Math.min(maxGuests, guests + Number(button.dataset.guestStep)));
 	updateBooking();
 }));
+
+// Wire Save Stay button with AuthManager
+const staySlug = bookingConfig.dataset.staySlug || '';
+const stayName = bookingConfig.dataset.currentName || '';
+const stayImage = bookingConfig.dataset.stayImage || '';
+const stayCity = bookingConfig.dataset.stayCity || 'Dhaka';
+const stayArea = bookingConfig.dataset.stayArea || 'Dhaka';
+const saveButton = document.querySelector<HTMLButtonElement>('[data-save]');
+
+if (saveButton && staySlug) {
+	const syncSaveState = () => {
+		const isSaved = authManager.isSaved(staySlug);
+		saveButton.setAttribute('aria-pressed', String(isSaved));
+		const heart = saveButton.querySelector('.save-heart');
+		if (heart) heart.textContent = isSaved ? '♥' : '♡';
+		setText('[data-save-label]', tProperty(isSaved ? 'saved' : 'save'));
+	};
+	syncSaveState();
+
+	saveButton.addEventListener('click', () => {
+		const isNowSaved = authManager.toggleSaveStay({
+			slug: staySlug,
+			name: stayName,
+			image: stayImage,
+			city: stayCity,
+			area: stayArea,
+			price: nightlyPrice,
+			rating: 4.9,
+			reviewCount: 42
+		});
+		syncSaveState();
+		announce(isNowSaved ? 'Saved to your dashboard wishlist!' : 'Removed from saved stays');
+	});
+
+	window.addEventListener('guesthouse:saved-changed', syncSaveState);
+}
+
+authManager.subscribe(() => {
+	updateBooking();
+});
+
 applyPropertyLanguage();
 updateBooking();
 
@@ -301,9 +357,37 @@ getElements<HTMLButtonElement>('[data-reserve]').forEach((button) => button.addE
 		checkOut.focus();
 		return;
 	}
+
+	const start = new Date(`${checkIn.value}T00:00:00`);
+	const end = new Date(`${checkOut.value}T00:00:00`);
+	const nights = Math.max(1, Math.round((end.getTime() - start.getTime()) / 86400000));
+	const baseTotal = nights * nightlyPrice;
+	const user = authManager.getUser();
+	const memberPerk = authManager.getMemberDiscount(baseTotal);
+	const totalPaid = user ? memberPerk.discountedTotal : baseTotal;
+
+	// Save real confirmed booking in user's profile
+	const newBooking = authManager.addBooking({
+		staySlug,
+		stayName,
+		stayImage,
+		city: stayCity,
+		area: stayArea,
+		checkIn: checkIn.value,
+		checkOut: checkOut.value,
+		nights,
+		guests,
+		totalPrice: totalPaid,
+		currency: 'USD'
+	});
+
+	const codeDisplay = document.getElementById('reserve-code-display');
+	if (codeDisplay) codeDisplay.textContent = newBooking.confirmationCode;
+
 	reserveDialog.showModal();
 	animateIn(reserveDialog.querySelector('.reserve-confirmation'), { duration: 0.35 });
 }));
+
 getElements<HTMLButtonElement>('[data-close-reservation]').forEach((button) => button.addEventListener('click', () => reserveDialog.close()));
 reserveDialog.addEventListener('click', (event) => { if (event.target === reserveDialog) reserveDialog.close(); });
 document.querySelector<HTMLButtonElement>('[data-fee-note]')?.addEventListener('click', () => announce('The displayed total includes the stay discount and fees.'));

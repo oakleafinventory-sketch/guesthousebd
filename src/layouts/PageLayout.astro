@@ -1,5 +1,7 @@
 ---
 import '../styles/global.css';
+import AuthModal from '../components/AuthModal.astro';
+import LanguagePicker from '../components/LanguagePicker.astro';
 
 interface Props {
 	title?: string;
@@ -25,6 +27,8 @@ const { title = 'GuesthouseBD — Stays, rides & with local guides', description
 	</head>
 	<body>
 		<slot />
+		<AuthModal />
+		<LanguagePicker />
 		{includeSiteScript && <script src="../scripts/site.js"></script>}
 	</body>
 </html>

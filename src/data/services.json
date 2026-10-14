@@ -1,0 +1,141 @@
+{
+  "timeSlots": [
+    { "id": "morning", "label": "Morning", "time": "09:00 – 13:00" },
+    { "id": "afternoon", "label": "Afternoon", "time": "14:00 – 18:00" },
+    { "id": "evening", "label": "Evening", "time": "18:30 – 22:30" },
+    { "id": "fullday", "label": "Full Day", "time": "09:00 – 21:00" }
+  ],
+  "categories": [
+    {
+      "id": "tour-guide",
+      "name": "Tour Guide",
+      "tagline": "Certified local cultural & heritage specialists",
+      "icon": "compass"
+    },
+    {
+      "id": "travel-assistant",
+      "name": "Personal Travel Assistant",
+      "tagline": "Bilingual concierge, shopping & lifestyle guide",
+      "icon": "user-check"
+    },
+    {
+      "id": "wellness-spa",
+      "name": "In-Stay Spa & Wellness",
+      "tagline": "Certified massage therapists & aromatherapy",
+      "icon": "sparkles"
+    },
+    {
+      "id": "transport-chauffeur",
+      "name": "Chauffeur & Airport Ride",
+      "tagline": "Executive private sedans & airport transfers",
+      "icon": "car"
+    }
+  ],
+  "providers": [
+    {
+      "id": "prov-guide-01",
+      "categoryId": "tour-guide",
+      "name": "Farzana Ahmed",
+      "badge": "Licensed Heritage Guide",
+      "rating": 4.98,
+      "reviewsCount": 84,
+      "photo": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&auto=format&fit=crop&q=80",
+      "phone": "+880 1711 002233",
+      "languages": ["English", "Bengali"],
+      "title": "Old Dhaka Heritage & Culinary Food Trail",
+      "description": "Exploration of historic Lalbagh Fort, Ahsan Manzil Pink Palace, Star Mosque, and legendary authentic Dhaka street food tasting.",
+      "basePrice": 25,
+      "currency": "USD"
+    },
+    {
+      "id": "prov-guide-02",
+      "categoryId": "tour-guide",
+      "name": "Arif Hasan",
+      "badge": "Cultural & Photography Specialist",
+      "rating": 4.92,
+      "reviewsCount": 62,
+      "photo": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80",
+      "phone": "+880 1712 998877",
+      "languages": ["English", "Bengali", "Hindi"],
+      "title": "River Buriganga Cruise & Artisan Workshops",
+      "description": "Private wooden boat cruise, brass and conch artisan workshops, and architectural hidden alleys of Old Dhaka.",
+      "basePrice": 32,
+      "currency": "USD"
+    },
+    {
+      "id": "prov-asst-01",
+      "categoryId": "travel-assistant",
+      "name": "Nafisa Chowdhury",
+      "badge": "Senior Concierge & Translator",
+      "rating": 4.96,
+      "reviewsCount": 47,
+      "photo": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80",
+      "phone": "+880 1817 443322",
+      "languages": ["English", "Bengali", "Japanese"],
+      "title": "Diplomatic Zone Shopping & Lifestyle Concierge",
+      "description": "Personal shopping assistance in Gulshan & Banani artisan boutiques, fine dining reservations, and bilingual business coordination.",
+      "basePrice": 30,
+      "currency": "USD"
+    },
+    {
+      "id": "prov-spa-01",
+      "categoryId": "wellness-spa",
+      "name": "Shumona Rahman",
+      "badge": "Certified Wellness Therapist",
+      "rating": 4.99,
+      "reviewsCount": 73,
+      "photo": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80",
+      "phone": "+880 1913 887766",
+      "languages": ["English", "Bengali"],
+      "title": "In-Suite Deep Tissue & Swedish Relaxation Therapy",
+      "description": "Full-body muscular relaxation with natural essential oils, herbal aromatherapy, and pressure point relief after long travel.",
+      "basePrice": 35,
+      "currency": "USD"
+    },
+    {
+      "id": "prov-spa-02",
+      "categoryId": "wellness-spa",
+      "name": "Karimul Haque",
+      "badge": "Licensed Sports & Acupressure Therapist",
+      "rating": 4.94,
+      "reviewsCount": 51,
+      "photo": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80",
+      "phone": "+880 1714 665544",
+      "languages": ["English", "Bengali"],
+      "title": "Holistic Reflexology & Head-Neck Relief",
+      "description": "Targeted tension relief, foot reflexology, and circulation rejuvenation performed in the comfort of your guesthouse suite.",
+      "basePrice": 28,
+      "currency": "USD"
+    },
+    {
+      "id": "prov-ride-01",
+      "categoryId": "transport-chauffeur",
+      "name": "Rafiqul Islam",
+      "badge": "Executive Chauffeur",
+      "rating": 4.95,
+      "reviewsCount": 350,
+      "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80",
+      "phone": "+880 1819 556677",
+      "languages": ["English", "Bengali"],
+      "title": "Executive Airport Pick & Drop (DAC Airport ↔ Stay)",
+      "description": "Guaranteed on-time terminal pickup with name signboard in private Toyota Premio Executive sedan (Climate Controlled, toll fees included).",
+      "basePrice": 18,
+      "currency": "USD"
+    },
+    {
+      "id": "prov-ride-02",
+      "categoryId": "transport-chauffeur",
+      "name": "Kamrul Hassan",
+      "badge": "Full-Day Dedicated Chauffeur",
+      "rating": 4.93,
+      "reviewsCount": 180,
+      "photo": "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=400&auto=format&fit=crop&q=80",
+      "phone": "+880 1718 221100",
+      "languages": ["English", "Bengali"],
+      "title": "Full-Day Private City Chauffeur (8 Hours Unlimited)",
+      "description": "Dedicated executive car and professional driver on standby for entire day trips, client meetings, and dining across Dhaka.",
+      "basePrice": 42,
+      "currency": "USD"
+    }
+  ]
+}

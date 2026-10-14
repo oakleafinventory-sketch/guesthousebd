@@ -1,0 +1,571 @@
+---
+---
+
+<dialog class="auth-modal" id="auth-modal" aria-labelledby="auth-modal-title">
+	<div class="auth-card">
+		<button class="auth-close" type="button" data-close-auth aria-label="Close dialog">×</button>
+		
+		<div class="auth-header">
+			<div class="auth-brand-badge">
+				<span>✦</span>
+			</div>
+			<h2 id="auth-modal-title" class="auth-title" data-i18n="authModal.welcomeTitle">Welcome to GuesthouseBD</h2>
+			<p class="auth-subtitle" data-i18n="authModal.welcomeSubtitle">Sign in to unlock exclusive member rates, saved wishlists, and your personal travel dashboard.</p>
+		</div>
+
+		<!-- Quick 1-Click Demo Accounts -->
+		<div class="auth-demo-section">
+			<span class="auth-demo-label" data-i18n="authModal.demoLabel">Instant 1-Click Demo Logins:</span>
+			<div class="auth-demo-grid">
+				<button type="button" class="demo-btn" data-demo-role="vip" title="Login as Gold VIP Member">
+					<span class="demo-badge gold">Gold VIP</span>
+					<div class="demo-info">
+						<strong>Sarah Khan</strong>
+						<small>15% Off VIP Rate</small>
+					</div>
+				</button>
+				<button type="button" class="demo-btn" data-demo-role="traveler" title="Login as Silver Traveler">
+					<span class="demo-badge silver">Member</span>
+					<div class="demo-info">
+						<strong>Tanvir Ahmed</strong>
+						<small>10% Off Member Rate</small>
+					</div>
+				</button>
+			</div>
+		</div>
+
+		<div class="auth-divider">
+			<span data-i18n="authModal.continueWithEmail">or continue with email</span>
+		</div>
+
+		<!-- Tab Switcher -->
+		<div class="auth-tabs" role="tablist">
+			<button class="auth-tab is-active" type="button" role="tab" id="tab-signin" aria-selected="true" data-auth-tab="signin" data-i18n="authModal.tabSignIn">Sign In</button>
+			<button class="auth-tab" type="button" role="tab" id="tab-signup" aria-selected="false" data-auth-tab="signup" data-i18n="authModal.tabSignUp">Create Account</button>
+		</div>
+
+		<!-- Error Message Banner -->
+		<div class="auth-alert" id="auth-alert" role="alert" hidden></div>
+
+		<!-- Sign In Form -->
+		<form class="auth-form" id="signin-form" autocomplete="on">
+			<div class="auth-field">
+				<label for="signin-email" data-i18n="authModal.emailLabel">Email Address</label>
+				<input type="email" id="signin-email" name="email" placeholder="name@example.com" required autocomplete="email" />
+			</div>
+			<div class="auth-field">
+				<div class="field-label-row">
+					<label for="signin-password" data-i18n="authModal.passwordLabel">Password</label>
+					<a href="#forgot" class="auth-ghost-link" tabindex="-1" data-i18n="authModal.forgot">Forgot?</a>
+				</div>
+				<input type="password" id="signin-password" name="password" placeholder="••••••••" required autocomplete="current-password" />
+			</div>
+			<button type="submit" class="auth-submit-btn" id="signin-submit">
+				<span data-i18n="authModal.signInBtn">Sign In</span>
+				<i aria-hidden="true">↗</i>
+			</button>
+		</form>
+
+		<!-- Sign Up Form -->
+		<form class="auth-form" id="signup-form" autocomplete="on" hidden>
+			<div class="auth-field">
+				<label for="signup-name" data-i18n="authModal.fullNameLabel">Full Name</label>
+				<input type="text" id="signup-name" name="name" placeholder="Your Name" required autocomplete="name" />
+			</div>
+			<div class="auth-field">
+				<label for="signup-email" data-i18n="authModal.emailLabel">Email Address</label>
+				<input type="email" id="signup-email" name="email" placeholder="name@example.com" required autocomplete="email" />
+			</div>
+			<div class="auth-field">
+				<label for="signup-password" data-i18n="authModal.passwordMin">Password (min 6 characters)</label>
+				<input type="password" id="signup-password" name="password" placeholder="••••••••" minlength="6" required autocomplete="new-password" />
+			</div>
+			<button type="submit" class="auth-submit-btn" id="signup-submit">
+				<span data-i18n="authModal.signUpBtn">Create Account</span>
+				<i aria-hidden="true">✦</i>
+			</button>
+		</form>
+
+		<!-- Perks summary footer -->
+		<div class="auth-perks">
+			<div class="perk-item">
+				<span class="perk-icon">✓</span>
+				<span data-i18n="authModal.perkDiscounts">Instant member discounts</span>
+			</div>
+			<div class="perk-item">
+				<span class="perk-icon">✓</span>
+				<span data-i18n="authModal.perkWishlist">Saved stays wishlist</span>
+			</div>
+			<div class="perk-item">
+				<span class="perk-icon">✓</span>
+				<span data-i18n="authModal.perkDashboard">Personal bookings dashboard</span>
+			</div>
+		</div>
+	</div>
+</dialog>
+
+<script>
+	import i18next from 'i18next';
+	import { languages, resources } from '../i18n/locales.js';
+	import { authManager } from '../scripts/auth';
+
+	const modal = document.getElementById('auth-modal') as HTMLDialogElement | null;
+	const alertBox = document.getElementById('auth-alert');
+	const signinForm = document.getElementById('signin-form') as HTMLFormElement | null;
+	const signupForm = document.getElementById('signup-form') as HTMLFormElement | null;
+	const signinTab = document.getElementById('tab-signin');
+	const signupTab = document.getElementById('tab-signup');
+	const closeBtn = document.querySelector('[data-close-auth]');
+
+	// i18n initialization
+	const getSavedLang = () => {
+		try {
+			return localStorage.getItem('guesthouse-language') || 'en';
+		} catch {
+			return 'en';
+		}
+	};
+
+	const authI18n = i18next.createInstance();
+	authI18n.init({
+		lng: getSavedLang(),
+		fallbackLng: 'en',
+		resources,
+		interpolation: { escapeValue: false },
+		initImmediate: false
+	});
+
+	function applyAuthTranslations() {
+		if (!modal) return;
+		modal.querySelectorAll<HTMLElement>('[data-i18n]').forEach((el) => {
+			const key = el.dataset.i18n;
+			if (key) {
+				el.textContent = authI18n.t(key);
+			}
+		});
+	}
+	applyAuthTranslations();
+
+	window.addEventListener('guesthouse:language-changed', (e: any) => {
+		const lang = e?.detail?.language || getSavedLang();
+		authI18n.changeLanguage(lang);
+		applyAuthTranslations();
+	});
+
+	window.addEventListener('storage', (e) => {
+		if (e.key === 'guesthouse-language' && e.newValue) {
+			authI18n.changeLanguage(e.newValue);
+			applyAuthTranslations();
+		}
+	});
+
+	function showAlert(message: string, isSuccess = false) {
+		if (!alertBox) return;
+		alertBox.textContent = message;
+		alertBox.classList.toggle('is-success', isSuccess);
+		alertBox.hidden = false;
+	}
+
+	function clearAlert() {
+		if (!alertBox) return;
+		alertBox.textContent = '';
+		alertBox.hidden = true;
+	}
+
+	function switchTab(tab: 'signin' | 'signup') {
+		clearAlert();
+		if (tab === 'signin') {
+			signinTab?.classList.add('is-active');
+			signinTab?.setAttribute('aria-selected', 'true');
+			signupTab?.classList.remove('is-active');
+			signupTab?.setAttribute('aria-selected', 'false');
+			if (signinForm) signinForm.hidden = false;
+			if (signupForm) signupForm.hidden = true;
+		} else {
+			signupTab?.classList.add('is-active');
+			signupTab?.setAttribute('aria-selected', 'true');
+			signinTab?.classList.remove('is-active');
+			signinTab?.setAttribute('aria-selected', 'false');
+			if (signinForm) signinForm.hidden = true;
+			if (signupForm) signupForm.hidden = false;
+		}
+	}
+
+	signinTab?.addEventListener('click', () => switchTab('signin'));
+	signupTab?.addEventListener('click', () => switchTab('signup'));
+
+	// Global open listener
+	document.addEventListener('click', (event) => {
+		const target = event.target as HTMLElement | null;
+		const trigger = target?.closest<HTMLElement>('[data-open-auth]');
+		if (trigger && modal) {
+			event.preventDefault();
+			const defaultTab = trigger.dataset.openAuth === 'signup' ? 'signup' : 'signin';
+			switchTab(defaultTab);
+			clearAlert();
+			modal.showModal();
+		}
+	});
+
+	closeBtn?.addEventListener('click', () => modal?.close());
+	modal?.addEventListener('click', (event) => {
+		if (event.target === modal) modal.close();
+	});
+
+	// Handle 1-click Demo buttons
+	document.querySelectorAll<HTMLButtonElement>('[data-demo-role]').forEach((btn) => {
+		btn.addEventListener('click', async () => {
+			const role = (btn.dataset.demoRole || 'vip') as 'traveler' | 'vip' | 'host';
+			btn.disabled = true;
+			try {
+				const user = await authManager.signInWithDemo(role);
+				showAlert(`Welcome back, ${user.name}! (${user.tier})`, true);
+				setTimeout(() => {
+					modal?.close();
+					btn.disabled = false;
+				}, 600);
+			} catch (err: any) {
+				showAlert(err.message || 'Login failed');
+				btn.disabled = false;
+			}
+		});
+	});
+
+	// Handle Sign In submit
+	signinForm?.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		clearAlert();
+		const submitBtn = document.getElementById('signin-submit') as HTMLButtonElement | null;
+		const email = (document.getElementById('signin-email') as HTMLInputElement)?.value;
+		const password = (document.getElementById('signin-password') as HTMLInputElement)?.value;
+
+		if (submitBtn) submitBtn.disabled = true;
+		try {
+			const user = await authManager.signInWithEmail(email, password);
+			showAlert(`Welcome back, ${user.name}!`, true);
+			setTimeout(() => {
+				modal?.close();
+				if (submitBtn) submitBtn.disabled = false;
+			}, 600);
+		} catch (err: any) {
+			showAlert(err.message || 'Invalid email or password');
+			if (submitBtn) submitBtn.disabled = false;
+		}
+	});
+
+	// Handle Sign Up submit
+	signupForm?.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		clearAlert();
+		const submitBtn = document.getElementById('signup-submit') as HTMLButtonElement | null;
+		const name = (document.getElementById('signup-name') as HTMLInputElement)?.value;
+		const email = (document.getElementById('signup-email') as HTMLInputElement)?.value;
+		const password = (document.getElementById('signup-password') as HTMLInputElement)?.value;
+
+		if (submitBtn) submitBtn.disabled = true;
+		try {
+			const user = await authManager.signUp(email, password, name);
+			showAlert(`Account created successfully! Welcome, ${user.name}!`, true);
+			setTimeout(() => {
+				modal?.close();
+				if (submitBtn) submitBtn.disabled = false;
+			}, 700);
+		} catch (err: any) {
+			showAlert(err.message || 'Registration failed');
+			if (submitBtn) submitBtn.disabled = false;
+		}
+	});
+</script>
+
+<style>
+	.auth-modal {
+		width: min(480px, calc(100vw - 32px));
+		max-width: 480px;
+		margin: auto;
+		padding: 0;
+		border: 1px solid var(--border);
+		border-radius: 20px;
+		background: var(--paper);
+		color: var(--ink);
+		box-shadow: 0 25px 60px rgba(0, 0, 0, 0.28);
+		overflow: hidden;
+	}
+	.auth-modal::backdrop {
+		background: rgba(18, 16, 22, 0.65);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
+	}
+	.auth-card {
+		position: relative;
+		padding: clamp(24px, 5vw, 36px);
+		max-height: 90vh;
+		overflow-y: auto;
+	}
+	.auth-close {
+		position: absolute;
+		top: 18px;
+		right: 18px;
+		display: grid;
+		place-items: center;
+		width: 34px;
+		height: 34px;
+		border: 1px solid var(--border);
+		border-radius: 50%;
+		background: var(--surface);
+		color: var(--ink);
+		font-size: 20px;
+		line-height: 1;
+		cursor: pointer;
+		transition: background 0.2s, transform 0.2s;
+	}
+	.auth-close:hover {
+		background: var(--surface-soft);
+		transform: scale(1.05);
+	}
+	.auth-header {
+		text-align: center;
+		margin-bottom: 20px;
+	}
+	.auth-brand-badge {
+		display: inline-grid;
+		place-items: center;
+		width: 42px;
+		height: 42px;
+		border-radius: 50%;
+		background: linear-gradient(135deg, #ff8a9b, var(--brand));
+		color: #fff;
+		font-size: 20px;
+		margin-bottom: 12px;
+		box-shadow: 0 8px 18px rgba(230, 24, 61, 0.25);
+	}
+	.auth-title {
+		font-family: 'Instrument Sans', system-ui, sans-serif;
+		font-size: 22px;
+		font-weight: 700;
+		color: var(--ink);
+		line-height: 1.25;
+	}
+	.auth-subtitle {
+		margin-top: 6px;
+		font-size: 13px;
+		color: var(--mut);
+		line-height: 1.45;
+	}
+	.auth-demo-section {
+		margin: 18px 0 16px;
+		padding: 12px;
+		border-radius: 12px;
+		background: var(--surface-soft);
+		border: 1px dashed rgba(230, 24, 61, 0.35);
+	}
+	.auth-demo-label {
+		display: block;
+		font-size: 11px;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		color: var(--brand);
+		margin-bottom: 8px;
+	}
+	.auth-demo-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 8px;
+	}
+	.demo-btn {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 8px 10px;
+		border: 1px solid var(--border);
+		border-radius: 8px;
+		background: var(--surface);
+		color: var(--ink);
+		cursor: pointer;
+		text-align: left;
+		transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+	}
+	.demo-btn:hover {
+		transform: translateY(-1px);
+		border-color: var(--brand);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+	}
+	.demo-badge {
+		font-size: 9px;
+		font-weight: 700;
+		padding: 3px 6px;
+		border-radius: 4px;
+		text-transform: uppercase;
+		letter-spacing: 0.3px;
+	}
+	.demo-badge.gold {
+		background: #fdf3d8;
+		color: #9a6700;
+	}
+	.demo-badge.silver {
+		background: #edf0f5;
+		color: #435269;
+	}
+	.demo-info strong {
+		display: block;
+		font-size: 12px;
+		line-height: 1.2;
+	}
+	.demo-info small {
+		display: block;
+		font-size: 10px;
+		color: var(--brand);
+		font-weight: 500;
+	}
+	.auth-divider {
+		position: relative;
+		text-align: center;
+		margin: 16px 0;
+	}
+	.auth-divider::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 0;
+		right: 0;
+		height: 1px;
+		background: var(--border);
+	}
+	.auth-divider span {
+		position: relative;
+		background: var(--paper);
+		padding: 0 10px;
+		font-size: 11px;
+		color: var(--mut);
+		text-transform: uppercase;
+		letter-spacing: 0.4px;
+	}
+	.auth-tabs {
+		display: flex;
+		border-bottom: 1px solid var(--border);
+		margin-bottom: 18px;
+	}
+	.auth-tab {
+		flex: 1;
+		padding: 10px 0;
+		border: 0;
+		border-bottom: 2px solid transparent;
+		background: none;
+		color: var(--mut);
+		font-size: 14px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: color 0.2s, border-color 0.2s;
+	}
+	.auth-tab.is-active {
+		color: var(--brand);
+		border-color: var(--brand);
+	}
+	.auth-alert {
+		padding: 10px 14px;
+		margin-bottom: 16px;
+		border-radius: 8px;
+		font-size: 12px;
+		background: #fde8e8;
+		color: #9b1c1c;
+		border: 1px solid #f8b4b4;
+	}
+	.auth-alert.is-success {
+		background: #def7ec;
+		color: #03543f;
+		border-color: #84e1bc;
+	}
+	.auth-form {
+		display: grid;
+		gap: 14px;
+	}
+	.auth-field {
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		text-align: left;
+	}
+	.field-label-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+	.auth-field label {
+		font-size: 12px;
+		font-weight: 600;
+		color: var(--ink);
+	}
+	.auth-ghost-link {
+		font-size: 11px;
+		color: var(--brand);
+	}
+	.auth-field input {
+		width: 100%;
+		height: 42px;
+		padding: 0 12px;
+		border: 1px solid var(--border);
+		border-radius: 8px;
+		background: var(--surface);
+		color: var(--ink);
+		font-size: 14px;
+		transition: border-color 0.2s, box-shadow 0.2s;
+	}
+	.auth-field input:focus {
+		border-color: var(--brand);
+		outline: none;
+		box-shadow: 0 0 0 3px rgba(230, 24, 61, 0.15);
+	}
+	.auth-submit-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 10px;
+		width: 100%;
+		height: 44px;
+		margin-top: 4px;
+		border: 0;
+		border-radius: 999px;
+		background: var(--brand);
+		color: #fff;
+		font-size: 14px;
+		font-weight: 700;
+		cursor: pointer;
+		transition: background 0.2s, transform 0.2s, opacity 0.2s;
+	}
+	.auth-submit-btn:hover {
+		background: #d01537;
+		transform: translateY(-1px);
+	}
+	.auth-submit-btn:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+	.auth-perks {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 12px;
+		margin-top: 20px;
+		padding-top: 16px;
+		border-top: 1px solid var(--border);
+		font-size: 11px;
+		color: var(--mut);
+	}
+	.perk-item {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+	}
+	.perk-icon {
+		color: var(--brand);
+		font-weight: 700;
+	}
+	:root[data-theme='dark'] .demo-badge.gold {
+		background: #3c2f0d;
+		color: #f7d070;
+	}
+	:root[data-theme='dark'] .demo-badge.silver {
+		background: #232b36;
+		color: #b5c7dd;
+	}
+</style>

@@ -1,0 +1,122 @@
+---
+import { languages } from '../i18n/locales.js';
+---
+
+<div class="language-picker" id="language-picker">
+	<button class="language-trigger" id="language-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Choose language" data-i18n-aria-label="nav.language">
+		<svg class="language-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"></path></svg>
+		<span class="language-label" id="language-label">English</span>
+	</button>
+	<ul class="language-menu" id="language-menu" role="listbox" aria-label="Select language" hidden>
+		{languages.map(({ code, label }, index) => (
+			<li>
+				<button
+					class:list={['lang-option', index === 0 && 'is-selected']}
+					type="button"
+					data-lang={code}
+					role="option"
+					aria-selected={index === 0 ? 'true' : 'false'}
+				>
+					{label}
+				</button>
+			</li>
+		))}
+	</ul>
+	<select id="language-select" class="sr-only" aria-label="Choose language">
+		{languages.map(({ code, label }) => (
+			<option value={code}>{label}</option>
+		))}
+	</select>
+</div>
+
+<script>
+	// When site.js is active on the homepage, site.js manages this picker.
+	// On all other pages (Dashboard, Property details, etc.), this script handles it.
+	const isSiteScriptActive = !!document.getElementById('site-header');
+
+	if (!isSiteScriptActive) {
+		const picker = document.getElementById('language-picker');
+		const trigger = document.getElementById('language-trigger');
+		const menu = document.getElementById('language-menu');
+		const label = document.getElementById('language-label');
+		const select = document.getElementById('language-select') as HTMLSelectElement | null;
+
+		function getSavedLang(): string {
+			try {
+				return localStorage.getItem('guesthouse-language') || 'en';
+			} catch {
+				return 'en';
+			}
+		}
+
+		function syncActiveLanguage(lang: string) {
+			if (select) select.value = lang;
+			if (menu) {
+				menu.querySelectorAll<HTMLButtonElement>('.lang-option').forEach((opt) => {
+					const isSelected = opt.dataset.lang === lang;
+					opt.classList.toggle('is-selected', isSelected);
+					opt.setAttribute('aria-selected', String(isSelected));
+					if (isSelected && label) {
+						label.textContent = opt.textContent?.trim() || 'English';
+					}
+				});
+			}
+		}
+
+		function selectLanguage(lang: string) {
+			try {
+				localStorage.setItem('guesthouse-language', lang);
+			} catch {}
+			document.documentElement.lang = lang;
+			syncActiveLanguage(lang);
+			window.dispatchEvent(new CustomEvent('guesthouse:language-changed', { detail: { language: lang } }));
+		}
+
+		// Initial sync from localStorage
+		syncActiveLanguage(getSavedLang());
+
+		// Toggle menu
+		trigger?.addEventListener('click', (e) => {
+			e.stopPropagation();
+			if (!menu) return;
+			const isOpen = !menu.hidden;
+			menu.hidden = isOpen;
+			trigger.setAttribute('aria-expanded', String(!isOpen));
+		});
+
+		// Choose language
+		menu?.addEventListener('click', (e) => {
+			const option = (e.target as HTMLElement).closest<HTMLButtonElement>('.lang-option');
+			if (!option || !option.dataset.lang) return;
+			selectLanguage(option.dataset.lang);
+			if (menu) menu.hidden = true;
+			trigger?.setAttribute('aria-expanded', 'false');
+		});
+
+		// Dismiss on outside click
+		document.addEventListener('click', (e) => {
+			if (!menu || !picker) return;
+			if (!picker.contains(e.target as Node)) {
+				menu.hidden = true;
+				trigger?.setAttribute('aria-expanded', 'false');
+			}
+		});
+
+		// Dismiss on escape key
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape' && menu && !menu.hidden) {
+				menu.hidden = true;
+				trigger?.setAttribute('aria-expanded', 'false');
+				trigger?.focus();
+			}
+		});
+
+		// Listen to language changes from anywhere else in the app (e.g. settings tab)
+		window.addEventListener('guesthouse:language-changed', (e: any) => {
+			const lang = e?.detail?.language;
+			if (lang) {
+				syncActiveLanguage(lang);
+			}
+		});
+	}
+</script>

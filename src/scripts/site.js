@@ -720,6 +720,13 @@ languageSelect.addEventListener('change', () => {
 		// The selected language still applies for this page view.
 	}
 	i18n.changeLanguage(language);
+	window.dispatchEvent(new CustomEvent('guesthouse:language-changed', { detail: { language } }));
+});
+window.addEventListener('guesthouse:language-changed', (e) => {
+	const lang = e?.detail?.language;
+	if (lang && lang !== i18n.language) {
+		i18n.changeLanguage(lang);
+	}
 });
 i18n.on('languageChanged', () => {
 	applyTranslations();
