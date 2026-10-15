@@ -1323,22 +1323,46 @@ import '../../styles/dashboard.css';
 						</div>
 					</div>
 
-					<!-- Scheduled Services Timeline Strip -->
-					${
-						services.length > 0
+					<!-- Scheduled Services Tab-Based Strip -->
+					${(() => {
+						const countTransport = services.filter((s) => s.categoryId === 'transport').length;
+						const countAssistant = services.filter((s) => s.categoryId === 'travel-assistant' || s.categoryId === 'tour-assistant').length;
+						const countGuide = services.filter((s) => s.categoryId === 'tour-guide').length;
+						const countExtra = services.filter((s) => s.categoryId === 'extra-services' || s.categoryId === 'amenities').length;
+
+						return services.length > 0
 							? `
-						<div class="booking-services-strip">
+						<div class="booking-services-strip" id="services-strip-${b.id}">
 							<div class="services-strip-header">
-								<span class="services-strip-title">
-									<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-									<span>${t('dashboard.tabServices')} (${services.length})</span>
-								</span>
-								<button type="button" class="btn-action-pill btn-service-add" style="height:28px; font-size:11px; padding:0 10px;" data-open-scheduler="${b.id}">
+								<div class="stay-services-tabs-group" role="tablist">
+									<button type="button" class="stay-srv-tab-btn is-active" data-stay-id="${b.id}" data-category="all" role="tab">
+										<span>All</span>
+										<span class="stay-srv-tab-count">${services.length}</span>
+									</button>
+									<button type="button" class="stay-srv-tab-btn" data-stay-id="${b.id}" data-category="transport" role="tab">
+										<span>Transport</span>
+										<span class="stay-srv-tab-count">${countTransport}</span>
+									</button>
+									<button type="button" class="stay-srv-tab-btn" data-stay-id="${b.id}" data-category="travel-assistant" role="tab">
+										<span>Travel Assistant</span>
+										<span class="stay-srv-tab-count">${countAssistant}</span>
+									</button>
+									<button type="button" class="stay-srv-tab-btn" data-stay-id="${b.id}" data-category="tour-guide" role="tab">
+										<span>Tour Guide</span>
+										<span class="stay-srv-tab-count">${countGuide}</span>
+									</button>
+									<button type="button" class="stay-srv-tab-btn" data-stay-id="${b.id}" data-category="extra-services" role="tab">
+										<span>Extra services</span>
+										<span class="stay-srv-tab-count">${countExtra}</span>
+									</button>
+								</div>
+								<button type="button" class="btn-action-pill btn-service-add" style="height:28px; font-size:11px; padding:0 10px; margin-left:auto;" data-open-scheduler="${b.id}">
 									<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
 									<span>${t('dashboard.addAnotherService')}</span>
 								</button>
 							</div>
-							<div class="services-items-grid">
+
+							<div class="services-items-grid" id="services-grid-${b.id}">
 								${services
 									.map((s) => {
 										const isPaid = s.paymentStatus === 'paid';
@@ -1348,8 +1372,13 @@ import '../../styles/dashboard.css';
 										const cleanPhone = s.providerPhone.replace(/\s+/g, '');
 										const digits = s.providerPhone.replace(/[^0-9]/g, '');
 
+										let normCat = 'transport';
+										if (s.categoryId === 'travel-assistant' || s.categoryId === 'tour-assistant') normCat = 'travel-assistant';
+										else if (s.categoryId === 'tour-guide') normCat = 'tour-guide';
+										else if (s.categoryId === 'extra-services' || s.categoryId === 'amenities') normCat = 'extra-services';
+
 										return `
-									<div class="service-item-card ${cardClass}">
+									<div class="service-item-card ${cardClass}" data-service-cat="${normCat}">
 										<div class="service-item-main">
 											<div class="service-item-left">
 												<div class="service-avatar-wrap">
@@ -1437,6 +1466,18 @@ import '../../styles/dashboard.css';
 									})
 									.join('')}
 							</div>
+
+							<!-- Dynamic Empty Category Box for Tab Switching -->
+							<div class="stay-service-empty-category" id="services-empty-cat-${b.id}" style="display:none;">
+								<div class="empty-cat-message">
+									<strong id="empty-cat-title-${b.id}">No services scheduled in this category</strong>
+									<span id="empty-cat-desc-${b.id}">Schedule a professional provider to assist you during your stay.</span>
+								</div>
+								<button type="button" class="btn-action-pill btn-service-add" id="btn-empty-book-${b.id}" style="height:32px; font-size:11.5px; padding:0 12px;">
+									<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+									<span id="empty-cat-btn-text-${b.id}">+ Book Service</span>
+								</button>
+							</div>
 						</div>
 						`
 							: `
@@ -1444,8 +1485,8 @@ import '../../styles/dashboard.css';
 							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="12 2 19 21 12 17 5 21 12 2"/></svg>
 							<span>No travel assistants, chauffeurs or amenities scheduled yet for this stay.</span>
 						</div>
-						`
-					}
+						`;
+					})()}
 
 					<div class="booking-actions-row">
 						<a href="/guestHouses/${b.city.toLowerCase()}/${b.staySlug}/" class="btn-action-pill btn-primary-dark">
@@ -1480,48 +1521,132 @@ import '../../styles/dashboard.css';
 			})
 			.join('');
 
+		// Helper to open scheduler modal for a stay with a pre-selected category
+		function openSchedulerForStay(id: string, initialCategory = 'transport') {
+			activeBookingId = id;
+			const b = bookings.find((item) => item.id === id);
+			if (!b) return;
+
+			const stayTitle = document.getElementById('modal-sched-stay');
+			if (stayTitle) stayTitle.textContent = `${b.stayName} (${b.checkIn} – ${b.checkOut})`;
+
+			const dateSelect = document.getElementById('sched-date-select') as HTMLSelectElement | null;
+			if (dateSelect) {
+				dateSelect.innerHTML = '';
+				const start = new Date(`${b.checkIn}T00:00:00`);
+				const end = new Date(`${b.checkOut}T00:00:00`);
+				const cur = new Date(start);
+				while (cur <= end) {
+					const dateStr = cur.toISOString().split('T')[0];
+					const opt = document.createElement('option');
+					opt.value = dateStr;
+					opt.textContent = `${dateStr} (${cur.toLocaleDateString(getLocaleInfo().intl, { weekday: 'short', month: 'short', day: 'numeric' })})`;
+					dateSelect.appendChild(opt);
+					cur.setDate(cur.getDate() + 1);
+				}
+			}
+
+			selectedCategory = initialCategory;
+			document.querySelectorAll('#sched-category-filters .sched-nav-tab').forEach((cBtn) => {
+				cBtn.classList.toggle('is-active', (cBtn as HTMLElement).dataset.cat === initialCategory);
+			});
+
+			const customContainer = document.getElementById('sched-custom-time-container');
+			if (customContainer) customContainer.style.display = 'none';
+			const slotSelect = document.getElementById('sched-slot-select') as HTMLSelectElement | null;
+			if (slotSelect) slotSelect.value = 'morning';
+
+			renderSchedulerProviders();
+			checkLiveConflict();
+			openModal('modal-schedule-service');
+		}
+
+		// Attach Listeners: Stay Services Tab Filtering
+		bookingsContainer.querySelectorAll<HTMLButtonElement>('.stay-srv-tab-btn').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const stayId = btn.dataset.stayId;
+				const category = btn.dataset.category || 'all';
+				if (!stayId) return;
+
+				bookingsContainer.querySelectorAll(`.stay-srv-tab-btn[data-stay-id="${stayId}"]`).forEach((b) => {
+					b.classList.remove('is-active');
+				});
+				btn.classList.add('is-active');
+
+				const grid = document.getElementById(`services-grid-${stayId}`);
+				const emptyBox = document.getElementById(`services-empty-cat-${stayId}`);
+				const emptyTitle = document.getElementById(`empty-cat-title-${stayId}`);
+				const emptyDesc = document.getElementById(`empty-cat-desc-${stayId}`);
+				const emptyBtnText = document.getElementById(`empty-cat-btn-text-${stayId}`);
+				const emptyBtn = document.getElementById(`btn-empty-book-${stayId}`) as HTMLButtonElement | null;
+				if (!grid) return;
+
+				const cards = grid.querySelectorAll<HTMLElement>('.service-item-card');
+				let visibleCount = 0;
+
+				cards.forEach((card) => {
+					const cardCat = card.dataset.serviceCat || '';
+					if (category === 'all' || cardCat === category) {
+						card.style.display = 'flex';
+						visibleCount++;
+					} else {
+						card.style.display = 'none';
+					}
+				});
+
+				if (emptyBox) {
+					if (visibleCount === 0) {
+						emptyBox.style.display = 'flex';
+						const catMeta: Record<string, { title: string; desc: string; label: string }> = {
+							transport: {
+								title: 'No Transport scheduled for this stay',
+								desc: 'Book private airport pickup, executive chauffeur, or 4x4 SUV.',
+								label: '+ Book Transport'
+							},
+							'travel-assistant': {
+								title: 'No Travel Assistant scheduled for this stay',
+								desc: 'Bilingual concierges for shopping, dining, and meetings.',
+								label: '+ Book Travel Assistant'
+							},
+							'tour-guide': {
+								title: 'No Tour Guide scheduled for this stay',
+								desc: 'Certified local specialists for Old Dhaka heritage and cuisine walks.',
+								label: '+ Book Tour Guide'
+							},
+							'extra-services': {
+								title: 'No Extra services scheduled for this stay',
+								desc: 'In-suite spa, personal chef, express laundry, or workstation.',
+								label: '+ Book Extra services'
+							}
+						};
+
+						const meta = catMeta[category] || {
+							title: 'No services scheduled in this category',
+							desc: 'Book a professional provider to assist during your stay.',
+							label: '+ Book Service'
+						};
+
+						if (emptyTitle) emptyTitle.textContent = meta.title;
+						if (emptyDesc) emptyDesc.textContent = meta.desc;
+						if (emptyBtnText) emptyBtnText.textContent = meta.label;
+						if (emptyBtn) {
+							emptyBtn.onclick = () => {
+								openSchedulerForStay(stayId, category === 'all' ? 'transport' : category);
+							};
+						}
+					} else {
+						emptyBox.style.display = 'none';
+					}
+				}
+			});
+		});
+
 		// Attach Listeners: Open Multi-Service Scheduler
 		bookingsContainer.querySelectorAll<HTMLButtonElement>('[data-open-scheduler]').forEach((btn) => {
 			btn.addEventListener('click', () => {
 				const id = btn.dataset.openScheduler;
 				if (!id) return;
-				activeBookingId = id;
-				const b = bookings.find((item) => item.id === id);
-				if (!b) return;
-
-				const stayTitle = document.getElementById('modal-sched-stay');
-				if (stayTitle) stayTitle.textContent = `${b.stayName} (${b.checkIn} – ${b.checkOut})`;
-
-				// Populate Date dropdown with stay dates
-				const dateSelect = document.getElementById('sched-date-select') as HTMLSelectElement | null;
-				if (dateSelect) {
-					dateSelect.innerHTML = '';
-					const start = new Date(`${b.checkIn}T00:00:00`);
-					const end = new Date(`${b.checkOut}T00:00:00`);
-					const cur = new Date(start);
-					while (cur <= end) {
-						const dateStr = cur.toISOString().split('T')[0];
-						const opt = document.createElement('option');
-						opt.value = dateStr;
-						opt.textContent = `${dateStr} (${cur.toLocaleDateString(getLocaleInfo().intl, { weekday: 'short', month: 'short', day: 'numeric' })})`;
-						dateSelect.appendChild(opt);
-						cur.setDate(cur.getDate() + 1);
-					}
-				}
-
-				selectedCategory = 'transport';
-				document.querySelectorAll('#sched-category-filters .sched-nav-tab').forEach((cBtn) => {
-					cBtn.classList.toggle('is-active', (cBtn as HTMLElement).dataset.cat === 'transport');
-				});
-
-				const customContainer = document.getElementById('sched-custom-time-container');
-				if (customContainer) customContainer.style.display = 'none';
-				const slotSelect = document.getElementById('sched-slot-select') as HTMLSelectElement | null;
-				if (slotSelect) slotSelect.value = 'morning';
-
-				renderSchedulerProviders();
-				checkLiveConflict();
-				openModal('modal-schedule-service');
+				openSchedulerForStay(id, 'transport');
 			});
 		});
 
@@ -2082,7 +2207,37 @@ import '../../styles/dashboard.css';
 
 		if (servicesEmpty) servicesEmpty.hidden = true;
 
-		servicesContainer.innerHTML = allServices
+		const execTransportCount = allServices.filter(s => s.categoryId === 'transport').length;
+		const execAssistantCount = allServices.filter(s => s.categoryId === 'travel-assistant' || s.categoryId === 'tour-assistant').length;
+		const execGuideCount = allServices.filter(s => s.categoryId === 'tour-guide').length;
+		const execExtraCount = allServices.filter(s => s.categoryId === 'extra-services' || s.categoryId === 'amenities').length;
+
+		const tabsFilterHtml = `
+			<div class="services-tab-filter-bar" id="exec-services-filter-bar">
+				<button type="button" class="stay-srv-tab-btn is-active" data-exec-cat="all">
+					<span>All</span>
+					<span class="stay-srv-tab-count">${allServices.length}</span>
+				</button>
+				<button type="button" class="stay-srv-tab-btn" data-exec-cat="transport">
+					<span>Transport</span>
+					<span class="stay-srv-tab-count">${execTransportCount}</span>
+				</button>
+				<button type="button" class="stay-srv-tab-btn" data-exec-cat="travel-assistant">
+					<span>Travel Assistant</span>
+					<span class="stay-srv-tab-count">${execAssistantCount}</span>
+				</button>
+				<button type="button" class="stay-srv-tab-btn" data-exec-cat="tour-guide">
+					<span>Tour Guide</span>
+					<span class="stay-srv-tab-count">${execGuideCount}</span>
+				</button>
+				<button type="button" class="stay-srv-tab-btn" data-exec-cat="extra-services">
+					<span>Extra services</span>
+					<span class="stay-srv-tab-count">${execExtraCount}</span>
+				</button>
+			</div>
+		`;
+
+		const cardsHtml = allServices
 			.map((s) => {
 				const isPaid = s.paymentStatus === 'paid';
 				const isAck = !!s.acknowledgedByProvider;
@@ -2092,8 +2247,13 @@ import '../../styles/dashboard.css';
 
 				const policy = authManager.canCancelService(s);
 
+				let normCat = 'transport';
+				if (s.categoryId === 'travel-assistant' || s.categoryId === 'tour-assistant') normCat = 'travel-assistant';
+				else if (s.categoryId === 'tour-guide') normCat = 'tour-guide';
+				else if (s.categoryId === 'extra-services' || s.categoryId === 'amenities') normCat = 'extra-services';
+
 				return `
-			<article class="guide-exec-card">
+			<article class="guide-exec-card" data-service-cat="${normCat}">
 				<div class="guide-exec-main">
 					<div class="guide-exec-profile">
 						<div class="guide-exec-avatar-box">
@@ -2200,6 +2360,26 @@ import '../../styles/dashboard.css';
 		`;
 			})
 			.join('');
+
+		servicesContainer.innerHTML = tabsFilterHtml + cardsHtml;
+
+		// Attach Listeners: Tab 3 Category Filter Buttons
+		servicesContainer.querySelectorAll<HTMLButtonElement>('[data-exec-cat]').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const cat = btn.dataset.execCat || 'all';
+				servicesContainer.querySelectorAll('[data-exec-cat]').forEach((b) => b.classList.remove('is-active'));
+				btn.classList.add('is-active');
+
+				servicesContainer.querySelectorAll<HTMLElement>('.guide-exec-card').forEach((card) => {
+					const cardCat = card.dataset.serviceCat || '';
+					if (cat === 'all' || cardCat === cat) {
+						card.style.display = 'flex';
+					} else {
+						card.style.display = 'none';
+					}
+				});
+			});
+		});
 
 		// Attach Listeners in Tab 3 (payments, ack, delete with 4-hour policy)
 		servicesContainer.querySelectorAll<HTMLButtonElement>('[data-remove-stay-service]').forEach((btn) => {
