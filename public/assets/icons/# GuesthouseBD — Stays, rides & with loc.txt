@@ -1,0 +1,78 @@
+# GuesthouseBD — Stays, rides & with local guides
+
+[🌍All](http://localhost:4321/#top)
+[⌂Stays](http://localhost:4321/#stays)
+[↗Pick & drop](http://localhost:4321/#ride)
+[✦Guides](http://localhost:4321/#people)
+[List your place](http://localhost:4321/#join)
+[📊My DashboardOverview & account control](http://localhost:4321/dashboard/)
+[📅ReservationsActive & past stays](http://localhost:4321/dashboard/#bookings)
+[♥Saved StaysYour wishlisted guesthouses0](http://localhost:4321/dashboard/#saved)
+
+## Where to?
+Popular destinations
+Choose a check-in date
+
+## Who’s coming?
+
+## Guesthouses to book & rentMost popular with our guests
+Book by the night or rent for the season. Every guesthouse is checked by our team.[View all ↗](http://localhost:4321/guestHouses/dhaka/)
+No stays match this destination. Try another place.
+
+## Everything on the road, one booking
+
+## Tour assistants
+
+### Add filter
+
+## Travel guides
+
+### Add filter
+
+### Filters
+
+## Inside for living
+[View stays ↗](http://localhost:4321/#stays)
+
+## Pay your way
+Choose a default method. You can change it at checkout.
+
+## Create your account
+Join with the app you already use.
+
+## Welcome back, Traveler!
+Your Member Account is active. You have access to exclusive rates, saved wishlists, and your private booking dashboard.
+[Go to My Dashboard↗](http://localhost:4321/dashboard/)
+[View Wishlist](http://localhost:4321/dashboard/#saved)
+
+## Your next stay awaits now
+[Explore stays ↗](http://localhost:4321/#stays)
+
+##### Explore
+[Guesthouses](http://localhost:4321/#stays)
+[Pick & drop](http://localhost:4321/#ride)
+[Guides](http://localhost:4321/#people)
+
+##### Support
+[Help centre](http://localhost:4321/)
+[Contact us](http://localhost:4321/)
+
+##### Legal
+[Terms](http://localhost:4321/)
+[Privacy](http://localhost:4321/)
+© 2026 GuesthouseBD. All rights reserved.
+[Guesthouses](http://localhost:4321/#stays)
+[Privacy](http://localhost:4321/)
+[Terms](http://localhost:4321/)
+
+## Welcome to GuesthouseBD
+Sign in to unlock exclusive member rates, saved wishlists, and your personal travel dashboard.
+Auto-fills your name, email & photo from Google
+[Forgot?](http://localhost:4321/#forgot)
+- English
+- বাংলা
+- 中文
+- Русский
+- Italiano
+- Français
+- हिन्दी

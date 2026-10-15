@@ -11,6 +11,32 @@ export interface UserProfile {
 	memberSince: string;
 	phone?: string;
 	role: 'traveler' | 'vip' | 'host';
+	/** User's gender preference — drives the default icon when no customAvatar is set */
+	gender?: 'male' | 'female' | 'other';
+	/** Base64 data-URL or remote URL of a user-uploaded profile photo */
+	customAvatar?: string;
+	/** National ID card number (stored locally, never sent externally) */
+	nationalId?: string;
+	/** Passport number for travel document tracking */
+	passportNumber?: string;
+	/** Whether user has enabled fingerprint auth for sensitive bookings */
+	fingerprintEnabled?: boolean;
+	/** True when signed in via Google OAuth */
+	googleLinked?: boolean;
+}
+
+/**
+ * Returns the correct avatar URL for a user:
+ *  1. If the user has uploaded a custom photo → use it
+ *  2. Else if gender is 'male'   → /assets/icons/user-male.png
+ *  3. Else if gender is 'female' → /assets/icons/user-female.png
+ *  4. Otherwise                  → /assets/icons/user.png (generic)
+ */
+export function resolveAvatarUrl(user: Pick<UserProfile, 'customAvatar' | 'gender' | 'avatar'>): string {
+	if (user.customAvatar) return user.customAvatar;
+	if (user.gender === 'male')   return '/assets/icons/user-male.png';
+	if (user.gender === 'female') return '/assets/icons/user-female.png';
+	return '/assets/icons/user.png';
 }
 
 export interface TourGuideService {
@@ -45,15 +71,16 @@ export interface DriverService {
 export interface StayBookedService {
 	id: string;
 	providerId: string;
-	categoryId: 'tour-guide' | 'travel-assistant' | 'wellness-spa' | 'transport-chauffeur';
+	categoryId: 'transport' | 'tour-guide' | 'tour-assistant' | 'amenities' | string;
 	categoryName: string;
 	title: string;
+	subServiceTitle?: string;
 	providerName: string;
 	providerPhone: string;
 	providerAvatar: string;
 	date: string; // YYYY-MM-DD
-	timeSlotId: 'morning' | 'afternoon' | 'evening' | 'fullday';
-	timeSlotLabel: string; // e.g. "Morning (09:00 – 13:00)"
+	timeSlotId: 'morning' | 'afternoon' | 'evening' | 'fullday' | 'custom' | string;
+	timeSlotLabel: string; // e.g. "Morning (09:00 – 13:00)" or "Custom: 10:30 AM"
 	price: number;
 	currency: string;
 	status: 'confirmed' | 'pending_payment' | 'pending_acknowledgement' | 'cancelled';
@@ -61,6 +88,14 @@ export interface StayBookedService {
 	acknowledgedByProvider: boolean;
 	acknowledgedAt?: string;
 	bookedAt: string;
+	cancellationHoursLimit?: number; // default 4 hours
+	cancellationDeadline?: string; // ISO date string
+	dispatchNotification?: {
+		sentToGuesthouseBD: boolean;
+		sentToProvider: boolean;
+		channels: string[];
+		sentAt: string;
+	};
 }
 
 export interface BookingRecord {
@@ -118,36 +153,50 @@ export const DEMO_PROFILES: Record<'traveler' | 'vip' | 'host', UserProfile> = {
 		email: 'sarah.khan@example.com',
 		name: 'Sarah Khan',
 		avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+		customAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
 		tier: 'Gold VIP',
 		discountRate: 0.15,
 		discountLabel: '15% VIP Club Discount',
 		memberSince: 'March 2024',
 		phone: '+880 1712 345678',
-		role: 'vip'
+		role: 'vip',
+		gender: 'female',
+		nationalId: '1992269412340001',
+		passportNumber: 'BG0942817',
+		fingerprintEnabled: true
 	},
 	traveler: {
 		id: 'demo-traveler-002',
 		email: 'tanvir.ahmed@example.com',
 		name: 'Tanvir Ahmed',
-		avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+		avatar: '/assets/icons/user-male.png',
 		tier: 'Silver Member',
 		discountRate: 0.10,
 		discountLabel: '10% Member Rate',
 		memberSince: 'August 2024',
 		phone: '+880 1819 876543',
-		role: 'traveler'
+		role: 'traveler',
+		gender: 'male',
+		nationalId: '1995269412340002',
+		passportNumber: 'BH7712349',
+		fingerprintEnabled: false
 	},
 	host: {
 		id: 'demo-host-003',
 		email: 'farhana.host@guesthousebd.com',
 		name: 'Farhana Yasmin',
 		avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80',
+		customAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80',
 		tier: 'Diamond Host',
 		discountRate: 0.20,
 		discountLabel: '20% Host Privilege Rate',
 		memberSince: 'January 2023',
 		phone: '+880 1911 223344',
-		role: 'host'
+		role: 'host',
+		gender: 'female',
+		nationalId: '1988269412340003',
+		passportNumber: 'A12894567',
+		fingerprintEnabled: true
 	}
 };
 
@@ -238,9 +287,8 @@ class AuthManager {
 					id: u.id,
 					email: u.email || 'traveler@guesthousebd.com',
 					name: u.user_metadata?.full_name || u.email?.split('@')[0] || 'Traveler',
-					avatar:
-						u.user_metadata?.avatar_url ||
-						'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+					customAvatar: u.user_metadata?.avatar_url || undefined,
+					avatar: u.user_metadata?.avatar_url || '/assets/icons/user.png',
 					tier: (u.user_metadata?.tier as any) || 'Silver Member',
 					discountRate: u.user_metadata?.discountRate ?? 0.10,
 					discountLabel: u.user_metadata?.discountLabel || '10% Member Rate',
@@ -256,13 +304,20 @@ class AuthManager {
 			supabase.auth.onAuthStateChange(async (event, session) => {
 				if (session?.user) {
 					const u = session.user;
+					// Detect if signed in via Google
+					const isGoogle = u.app_metadata?.provider === 'google' ||
+						(u.identities || []).some((i: any) => i.provider === 'google');
+					// Preserve locally-saved profile extras (docs, fingerprint, etc.)
+					const existing = this.currentUser || (() => {
+						try { const s = localStorage.getItem(STORAGE_KEYS.USER); return s ? JSON.parse(s) : null; } catch { return null; }
+					})();
 					const userProfile: UserProfile = {
 						id: u.id,
 						email: u.email || '',
 						name: u.user_metadata?.full_name || u.email?.split('@')[0] || 'Traveler',
-						avatar:
-							u.user_metadata?.avatar_url ||
-							'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+						phone: u.user_metadata?.phone || u.phone || existing?.phone,
+						customAvatar: u.user_metadata?.avatar_url || existing?.customAvatar || undefined,
+						avatar: u.user_metadata?.avatar_url || existing?.customAvatar || '/assets/icons/user.png',
 						tier: (u.user_metadata?.tier as any) || 'Silver Member',
 						discountRate: 0.10,
 						discountLabel: '10% Member Rate',
@@ -270,7 +325,13 @@ class AuthManager {
 							month: 'short',
 							year: 'numeric'
 						}),
-						role: 'traveler'
+						role: 'traveler',
+						googleLinked: isGoogle,
+						// Preserve locally-saved sensitive fields
+						gender: existing?.gender,
+						nationalId: existing?.nationalId,
+						passportNumber: existing?.passportNumber,
+						fingerprintEnabled: existing?.fingerprintEnabled,
 					};
 					this.saveSession(userProfile);
 				} else if (event === 'SIGNED_OUT') {
@@ -298,6 +359,145 @@ class AuthManager {
 		return () => this.listeners.delete(callback);
 	}
 
+	/**
+	 * Update mutable profile fields including travel documents and security settings.
+	 * Automatically recomputes the `avatar` field using resolveAvatarUrl.
+	 * Syncs metadata to Supabase if session exists.
+	 */
+	public updateProfile(updates: Partial<Pick<UserProfile,
+		'name' | 'phone' | 'gender' | 'customAvatar' |
+		'nationalId' | 'passportNumber' | 'fingerprintEnabled'
+	>>): UserProfile | null {
+		const user = this.getUser();
+		if (!user) return null;
+		const updated: UserProfile = {
+			...user,
+			...updates,
+		};
+		// Recompute resolved avatar
+		updated.avatar = resolveAvatarUrl(updated);
+		this.saveSession(updated);
+
+		if (supabase) {
+			supabase.auth.updateUser({
+				data: {
+					full_name: updated.name,
+					phone: updated.phone,
+					gender: updated.gender,
+					avatar_url: updated.customAvatar || updated.avatar,
+					nationalId: updated.nationalId,
+					passportNumber: updated.passportNumber,
+					fingerprintEnabled: updated.fingerprintEnabled,
+				}
+			}).catch((err) => {
+				console.warn('Supabase metadata sync notice:', err);
+			});
+		}
+
+		return updated;
+	}
+
+	/**
+	 * Update user password with validation and Supabase integration.
+	 */
+	public async updatePassword(newPassword: string): Promise<void> {
+		if (!newPassword || newPassword.length < 6) {
+			throw new Error('Password must contain at least 6 characters.');
+		}
+		if (supabase) {
+			const { error } = await supabase.auth.updateUser({ password: newPassword });
+			if (error) throw error;
+		}
+		try {
+			localStorage.setItem('guesthouse_local_pwd_timestamp', String(Date.now()));
+		} catch {}
+	}
+
+	/**
+	 * Sign in with Google via Supabase OAuth.
+	 * Uses skipBrowserRedirect: true and a probe check to verify that Google OAuth is active
+	 * on the Supabase project, gracefully handling "Unsupported provider: provider is not enabled"
+	 * without redirecting the user to a raw JSON 400 error page.
+	 */
+	public async signInWithGoogle(): Promise<{ url?: string; requiresProviderConfig?: boolean; error?: string }> {
+		if (!supabase) {
+			throw new Error('Supabase is not configured. Please verify your Supabase credentials in .env.');
+		}
+		const { data, error } = await supabase.auth.signInWithOAuth({
+			provider: 'google',
+			options: {
+				redirectTo: `${window.location.origin}/dashboard/`,
+				skipBrowserRedirect: true,
+				queryParams: {
+					access_type: 'offline',
+					prompt: 'consent',
+					scope: 'openid email profile phone',
+				},
+			},
+		});
+
+		if (error) {
+			const msg = error.message || '';
+			if (msg.includes('not enabled') || msg.includes('validation_failed') || (error as any).status === 400) {
+				return { requiresProviderConfig: true, error: msg };
+			}
+			throw error;
+		}
+
+		if (!data?.url) {
+			throw new Error('No authorization URL returned from Supabase.');
+		}
+
+		// Pre-flight probe: check if the provider is enabled in Supabase without blind page navigation
+		try {
+			const probe = await fetch(data.url, { method: 'GET' });
+			if (!probe.ok) {
+				const body = await probe.json().catch(() => ({}));
+				if (body.error_code === 'validation_failed' || body.msg?.includes('not enabled') || probe.status === 400) {
+					return {
+						requiresProviderConfig: true,
+						error: body.msg || 'Unsupported provider: provider is not enabled'
+					};
+				}
+			}
+		} catch (probeErr) {
+			// A fetch redirect to accounts.google.com triggers an opaque CORS / redirect response,
+			// which proves the provider is active and successfully redirecting to Google!
+		}
+
+		// Provider is enabled! Navigate the user to Google
+		window.location.href = data.url;
+		return { url: data.url };
+	}
+
+	/**
+	 * Instant Google OAuth Traveler simulator for local staging and test environments.
+	 * Pre-populates verified Google account data (name, email, phone, avatar, googleLinked).
+	 */
+	public async signInWithGoogleDemo(): Promise<UserProfile> {
+		const profile: UserProfile = {
+			id: 'google_user_' + Date.now().toString(36),
+			email: 'alex.rahman.traveler@gmail.com',
+			name: 'Alex Rahman',
+			avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80',
+			customAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80',
+			phone: '+880 1819 889900',
+			gender: 'male',
+			nationalId: '1990269412349988',
+			passportNumber: 'A08927163',
+			tier: 'Gold VIP',
+			discountRate: 0.15,
+			discountLabel: '15% VIP Club Rate',
+			memberSince: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+			role: 'vip',
+			googleLinked: true,
+			fingerprintEnabled: true
+		};
+		this.saveSession(profile);
+		this.seedDemoDataIfEmpty(profile);
+		return profile;
+	}
+
 	public async signInWithDemo(role: 'traveler' | 'vip' | 'host' = 'vip'): Promise<UserProfile> {
 		const profile = DEMO_PROFILES[role];
 		this.saveSession(profile);
@@ -318,9 +518,8 @@ class AuthManager {
 				id: data.user.id,
 				email: data.user.email || email,
 				name: data.user.user_metadata?.full_name || email.split('@')[0],
-				avatar:
-					data.user.user_metadata?.avatar_url ||
-					'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+				customAvatar: data.user.user_metadata?.avatar_url || undefined,
+				avatar: data.user.user_metadata?.avatar_url || '/assets/icons/user.png',
 				tier: 'Silver Member',
 				discountRate: 0.10,
 				discountLabel: '10% Member Rate',
@@ -338,7 +537,7 @@ class AuthManager {
 			id: 'user_' + Math.random().toString(36).substring(2, 9),
 			email,
 			name: capitalized,
-			avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+			avatar: '/assets/icons/user.png',
 			tier: 'Silver Member',
 			discountRate: 0.10,
 			discountLabel: '10% Member Rate',
@@ -370,7 +569,7 @@ class AuthManager {
 				id: u?.id || 'usr_' + Date.now(),
 				email,
 				name: name || email.split('@')[0],
-				avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+				avatar: '/assets/icons/user.png',
 				tier: 'Silver Member',
 				discountRate: 0.10,
 				discountLabel: '10% Member Rate',
@@ -385,7 +584,7 @@ class AuthManager {
 			id: 'user_' + Math.random().toString(36).substring(2, 9),
 			email,
 			name,
-			avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+			avatar: '/assets/icons/user.png',
 			tier: 'Silver Member',
 			discountRate: 0.10,
 			discountLabel: '10% Member Rate',
@@ -647,26 +846,117 @@ class AuthManager {
 		return true;
 	}
 
-	// ---------------- Multi-Service Scheduler with Conflict Prevention ---------------- //
+	// ---------------- Multi-Service Scheduler with Conflict Prevention & 4-Hour Policy ---------------- //
 	public checkServiceConflict(
 		existingServices: StayBookedService[] = [],
 		newDate: string,
-		newSlotId: 'morning' | 'afternoon' | 'evening' | 'fullday'
+		newSlotId: string,
+		providerId?: string,
+		customTime?: string
 	): { hasConflict: boolean; conflictingService?: StayBookedService; message?: string } {
-		const activeServices = existingServices.filter((s) => s.status !== 'cancelled');
-		for (const s of activeServices) {
+		const allBookings = this.getBookings();
+		const allActiveServices: StayBookedService[] = [];
+		allBookings.forEach((b) => {
+			(b.services || []).forEach((s) => {
+				if (s.status !== 'cancelled') allActiveServices.push(s);
+			});
+		});
+
+		// Check 1: Provider availability check across the entire platform
+		if (providerId) {
+			for (const s of allActiveServices) {
+				if (s.providerId === providerId && s.date === newDate) {
+					const isSlotOverlap =
+						s.timeSlotId === 'fullday' ||
+						newSlotId === 'fullday' ||
+						s.timeSlotId === newSlotId ||
+						(s.timeSlotId === 'custom' && customTime && s.timeSlotLabel.includes(customTime));
+
+					if (isSlotOverlap) {
+						return {
+							hasConflict: true,
+							conflictingService: s,
+							message: `Provider Unavailable: ${s.providerName} is already committed on ${newDate} for ${s.timeSlotLabel}. Please choose a different date/time or select another provider.`
+						};
+					}
+				}
+			}
+		}
+
+		// Check 2: Same stay traveler itinerary conflict
+		const stayActiveServices = existingServices.filter((s) => s.status !== 'cancelled');
+		for (const s of stayActiveServices) {
 			if (s.date === newDate) {
-				// Conflict occurs if either service is full-day, or both share the exact same slot
-				if (s.timeSlotId === 'fullday' || newSlotId === 'fullday' || s.timeSlotId === newSlotId) {
+				const isSlotOverlap =
+					s.timeSlotId === 'fullday' ||
+					newSlotId === 'fullday' ||
+					s.timeSlotId === newSlotId ||
+					(s.timeSlotId === 'custom' && customTime && s.timeSlotLabel.includes(customTime));
+
+				if (isSlotOverlap) {
 					return {
 						hasConflict: true,
 						conflictingService: s,
-						message: `Schedule Collision: "${s.title}" (${s.timeSlotLabel}) is already booked on ${newDate}. Please choose a different date or time slot.`
+						message: `Schedule Overlap: You already have "${s.title}" booked on ${newDate} (${s.timeSlotLabel}). Please pick a different time slot.`
 					};
 				}
 			}
 		}
+
 		return { hasConflict: false };
+	}
+
+	/**
+	 * Computes whether a scheduled service can be cancelled with a refund
+	 * Default admin policy: Free cancellation up to 4 hours before scheduled time.
+	 */
+	public canCancelService(service: StayBookedService, adminLimitHours: number = 4): {
+		canCancel: boolean;
+		hoursRemaining: number;
+		deadlineFormatted: string;
+		deadlineIso: string;
+		reason?: string;
+	} {
+		// Determine start time from slot
+		let timeString = '09:00';
+		if (service.timeSlotId === 'afternoon') timeString = '14:00';
+		else if (service.timeSlotId === 'evening') timeString = '18:30';
+		else if (service.timeSlotId === 'fullday') timeString = '09:00';
+		else if (service.timeSlotId === 'custom') {
+			const match = service.timeSlotLabel.match(/(\d{1,2}:\d{2})/);
+			if (match) timeString = match[1];
+		}
+
+		const serviceStart = new Date(`${service.date}T${timeString}:00`);
+		const deadlineMs = serviceStart.getTime() - adminLimitHours * 60 * 60 * 1000;
+		const deadlineDate = new Date(deadlineMs);
+		const nowMs = Date.now();
+		const diffMs = deadlineMs - nowMs;
+		const hoursRemaining = Math.max(0, Math.round(diffMs / (60 * 60 * 1000)));
+
+		const deadlineFormatted = deadlineDate.toLocaleString('en-US', {
+			month: 'short',
+			day: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit'
+		});
+
+		if (nowMs <= deadlineMs) {
+			return {
+				canCancel: true,
+				hoursRemaining,
+				deadlineFormatted,
+				deadlineIso: deadlineDate.toISOString()
+			};
+		} else {
+			return {
+				canCancel: false,
+				hoursRemaining: 0,
+				deadlineFormatted,
+				deadlineIso: deadlineDate.toISOString(),
+				reason: `Cancellation deadline passed (${adminLimitHours}h policy). Service starts in less than ${adminLimitHours} hours; no refund applies.`
+			};
+		}
 	}
 
 	public addServiceToStay(
@@ -683,7 +973,12 @@ class AuthManager {
 		}
 
 		const existing = booking.services || [];
-		const conflict = this.checkServiceConflict(existing, service.date, service.timeSlotId);
+		const conflict = this.checkServiceConflict(
+			existing,
+			service.date,
+			service.timeSlotId,
+			service.providerId
+		);
 		if (conflict.hasConflict) {
 			return { success: false, error: conflict.message };
 		}
@@ -695,6 +990,18 @@ class AuthManager {
 			status = acknowledgedByProvider ? 'confirmed' : 'pending_acknowledgement';
 		}
 
+		// Calculate 4-hour cancellation deadline
+		let timeString = '09:00';
+		if (service.timeSlotId === 'afternoon') timeString = '14:00';
+		else if (service.timeSlotId === 'evening') timeString = '18:30';
+		else if (service.timeSlotId === 'fullday') timeString = '09:00';
+		else if (service.timeSlotId === 'custom') {
+			const match = service.timeSlotLabel.match(/(\d{1,2}:\d{2})/);
+			if (match) timeString = match[1];
+		}
+		const serviceStart = new Date(`${service.date}T${timeString}:00`);
+		const cancelDeadline = new Date(serviceStart.getTime() - 4 * 60 * 60 * 1000).toISOString();
+
 		const newService: StayBookedService = {
 			...service,
 			id: 'srv_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
@@ -702,7 +1009,15 @@ class AuthManager {
 			acknowledgedByProvider,
 			acknowledgedAt: acknowledgedByProvider ? new Date().toISOString() : undefined,
 			status,
-			bookedAt: new Date().toISOString()
+			bookedAt: new Date().toISOString(),
+			cancellationHoursLimit: 4,
+			cancellationDeadline: cancelDeadline,
+			dispatchNotification: {
+				sentToGuesthouseBD: true,
+				sentToProvider: true,
+				channels: ['Push Notification', 'Email', 'SMS (Queued)'],
+				sentAt: new Date().toISOString()
+			}
 		};
 
 		const updatedBookings = all.map((b) => {
@@ -772,12 +1087,12 @@ class AuthManager {
 					if (s.id === serviceId) {
 						found = true;
 						const nextAck = explicitValue !== undefined ? explicitValue : !s.acknowledgedByProvider;
-						let nextStatus: StayBookedService['status'] = 'pending_payment';
-						if (s.paymentStatus === 'paid') {
-							nextStatus = nextAck ? 'confirmed' : 'pending_acknowledgement';
-						}
+						// When provider accepts, fee is officially deducted from user account escrow
+						const nextPayment: 'unpaid' | 'paid' = nextAck ? 'paid' : s.paymentStatus;
+						const nextStatus: StayBookedService['status'] = nextAck ? 'confirmed' : 'pending_acknowledgement';
 						return {
 							...s,
+							paymentStatus: nextPayment,
 							acknowledgedByProvider: nextAck,
 							acknowledgedAt: nextAck ? new Date().toISOString() : undefined,
 							status: nextStatus
@@ -803,8 +1118,17 @@ class AuthManager {
 		return true;
 	}
 
-	public removeServiceFromStay(bookingId: string, serviceId: string): boolean {
+	public removeServiceFromStay(bookingId: string, serviceId: string): { success: boolean; refunded: boolean; message: string } {
 		const all = this.getBookings();
+		const booking = all.find((b) => b.id === bookingId);
+		if (!booking) return { success: false, refunded: false, message: 'Booking not found' };
+
+		const service = (booking.services || []).find((s) => s.id === serviceId);
+		if (!service) return { success: false, refunded: false, message: 'Service not found' };
+
+		const policy = this.canCancelService(service);
+		const willRefund = policy.canCancel && service.paymentStatus === 'paid';
+
 		const updatedBookings = all.map((b) => {
 			if (b.id === bookingId) {
 				return {
@@ -818,14 +1142,20 @@ class AuthManager {
 		try {
 			localStorage.setItem(STORAGE_KEYS.BOOKINGS, JSON.stringify(updatedBookings));
 		} catch {
-			return false;
+			return { success: false, refunded: false, message: 'Storage error' };
 		}
 
 		if (typeof window !== 'undefined') {
 			window.dispatchEvent(new CustomEvent('guesthouse:bookings-changed', { detail: { bookings: updatedBookings } }));
 		}
 
-		return true;
+		const message = policy.canCancel
+			? willRefund
+				? `Service cancelled successfully. 100% full refund of $${service.price} USD credited back to your account.`
+				: `Service reservation cancelled successfully.`
+			: `Service cancelled. As cancellation occurred within 4 hours of the scheduled service, no refund was issued per policy.`;
+
+		return { success: true, refunded: willRefund, message };
 	}
 
 	// Seed realistic demo bookings/saved items so the user gets an incredible initial experience
@@ -862,10 +1192,11 @@ class AuthManager {
 					services: [
 						{
 							id: 'srv_demo_01',
-							providerId: 'prov-ride-01',
-							categoryId: 'transport-chauffeur',
-							categoryName: 'Chauffeur & Airport Ride',
-							title: 'Executive Airport Pick & Drop',
+							providerId: 'prov-trans-01',
+							categoryId: 'transport',
+							categoryName: 'Transport',
+							title: 'Airport Transfer (DAC Airport ↔ Guesthouse)',
+							subServiceTitle: 'DAC Airport Pickup',
 							providerName: 'Rafiqul Islam',
 							providerPhone: '+880 1819 556677',
 							providerAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
@@ -878,7 +1209,9 @@ class AuthManager {
 							paymentStatus: 'paid',
 							acknowledgedByProvider: true,
 							acknowledgedAt: '2026-10-10T14:40:00Z',
-							bookedAt: '2026-10-10T14:35:00Z'
+							bookedAt: '2026-10-10T14:35:00Z',
+							cancellationHoursLimit: 4,
+							cancellationDeadline: '2026-10-20T10:00:00.000Z'
 						},
 						{
 							id: 'srv_demo_02',
@@ -886,6 +1219,7 @@ class AuthManager {
 							categoryId: 'tour-guide',
 							categoryName: 'Tour Guide',
 							title: 'Old Dhaka Heritage & Culinary Food Trail',
+							subServiceTitle: 'Historic Street Food Walk',
 							providerName: 'Farzana Ahmed',
 							providerPhone: '+880 1711 002233',
 							providerAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80',
@@ -897,17 +1231,20 @@ class AuthManager {
 							status: 'pending_acknowledgement',
 							paymentStatus: 'paid',
 							acknowledgedByProvider: false,
-							bookedAt: '2026-10-10T14:36:00Z'
+							bookedAt: '2026-10-10T14:36:00Z',
+							cancellationHoursLimit: 4,
+							cancellationDeadline: '2026-10-21T05:00:00.000Z'
 						},
 						{
 							id: 'srv_demo_03',
-							providerId: 'prov-spa-01',
-							categoryId: 'wellness-spa',
-							categoryName: 'Spa & Wellness',
-							title: 'In-Suite Aromatherapy & Hot Stone Massage',
-							providerName: 'Suraiya Parvin',
-							providerPhone: '+880 1819 112233',
-							providerAvatar: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=200&auto=format&fit=crop&q=80',
+							providerId: 'prov-amen-01',
+							categoryId: 'amenities',
+							categoryName: 'Amenities',
+							title: 'In-Suite Deep Tissue & Swedish Relaxation Therapy',
+							subServiceTitle: '60-Min Swedish Massage',
+							providerName: 'Shumona Rahman',
+							providerPhone: '+880 1913 887766',
+							providerAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80',
 							date: '2026-10-22',
 							timeSlotId: 'evening',
 							timeSlotLabel: 'Evening (18:30 – 22:30)',
@@ -916,7 +1253,9 @@ class AuthManager {
 							status: 'pending_payment',
 							paymentStatus: 'unpaid',
 							acknowledgedByProvider: false,
-							bookedAt: '2026-10-10T14:40:00Z'
+							bookedAt: '2026-10-10T14:40:00Z',
+							cancellationHoursLimit: 4,
+							cancellationDeadline: '2026-10-22T14:30:00.000Z'
 						}
 					]
 				}

@@ -1,37 +1,118 @@
 {
+  "cancellationPolicy": {
+    "freeCancellationWindowHours": 4,
+    "description": "Free cancellation up to 4 hours before scheduled service. Non-refundable thereafter."
+  },
   "timeSlots": [
     { "id": "morning", "label": "Morning", "time": "09:00 – 13:00" },
     { "id": "afternoon", "label": "Afternoon", "time": "14:00 – 18:00" },
     { "id": "evening", "label": "Evening", "time": "18:30 – 22:30" },
-    { "id": "fullday", "label": "Full Day", "time": "09:00 – 21:00" }
+    { "id": "fullday", "label": "Full Day", "time": "09:00 – 21:00" },
+    { "id": "custom", "label": "Custom Time", "time": "Open Selection" }
   ],
   "categories": [
     {
-      "id": "tour-guide",
-      "name": "Tour Guide",
-      "tagline": "Certified local cultural & heritage specialists",
-      "icon": "compass"
+      "id": "transport",
+      "name": "Transport",
+      "tagline": "Airport transfers, executive sedans & private city chauffeurs"
     },
     {
       "id": "travel-assistant",
-      "name": "Personal Travel Assistant",
-      "tagline": "Bilingual concierge, shopping & lifestyle guide",
-      "icon": "user-check"
+      "name": "Travel Assistant",
+      "tagline": "Bilingual personal concierges, shopping & lifestyle assistants"
     },
     {
-      "id": "wellness-spa",
-      "name": "In-Stay Spa & Wellness",
-      "tagline": "Certified massage therapists & aromatherapy",
-      "icon": "sparkles"
+      "id": "tour-guide",
+      "name": "Tour Guide",
+      "tagline": "Certified local cultural, heritage & photography specialists"
     },
     {
-      "id": "transport-chauffeur",
-      "name": "Chauffeur & Airport Ride",
-      "tagline": "Executive private sedans & airport transfers",
-      "icon": "car"
+      "id": "extra-services",
+      "name": "Extra services",
+      "tagline": "In-suite spa, private chef, express laundry & Starlink workstation"
     }
   ],
   "providers": [
+    {
+      "id": "prov-trans-01",
+      "categoryId": "transport",
+      "name": "Rafiqul Islam",
+      "badge": "Executive Airport Chauffeur",
+      "rating": 4.95,
+      "reviewsCount": 350,
+      "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80",
+      "phone": "+880 1819 556677",
+      "languages": ["English", "Bengali"],
+      "title": "Airport Transfer (DAC Airport ↔ Guesthouse)",
+      "description": "Terminal arrival pickup with name signboard in private Toyota Premio Executive sedan. Toll charges and flight monitoring included.",
+      "basePrice": 18,
+      "currency": "USD",
+      "subServices": ["DAC Airport Pickup", "DAC Airport Dropoff", "Luggage Assistance"]
+    },
+    {
+      "id": "prov-trans-02",
+      "categoryId": "transport",
+      "name": "Kamrul Hassan",
+      "badge": "Full-Day Dedicated Chauffeur",
+      "rating": 4.93,
+      "reviewsCount": 180,
+      "photo": "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=400&auto=format&fit=crop&q=80",
+      "phone": "+880 1718 221100",
+      "languages": ["English", "Bengali"],
+      "title": "Full-Day Dedicated City Chauffeur (8 Hours Unlimited)",
+      "description": "Dedicated executive car and professional driver on standby for entire day trips, client meetings, shopping, and dining across Dhaka.",
+      "basePrice": 42,
+      "currency": "USD",
+      "subServices": ["8-Hour City Roaming", "Fuel & Tolls Included", "English Speaking Driver"]
+    },
+    {
+      "id": "prov-trans-03",
+      "categoryId": "transport",
+      "name": "Tariqul Anwar",
+      "badge": "Intercity Premium SUV Specialist",
+      "rating": 4.97,
+      "reviewsCount": 94,
+      "photo": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80",
+      "phone": "+880 1912 334455",
+      "languages": ["English", "Bengali", "Urdu"],
+      "title": "Luxury Intercity 4x4 SUV (Dhaka to Countryside)",
+      "description": "Toyota Prado 4x4 SUV for trips outside Dhaka (Gazipur resorts, Padma Bridge, Narayanganj or Savar).",
+      "basePrice": 65,
+      "currency": "USD",
+      "subServices": ["Toyota Prado 4x4", "Long Distance Intercity", "Bottled Water & WiFi"]
+    },
+    {
+      "id": "prov-asst-01",
+      "categoryId": "travel-assistant",
+      "name": "Nafisa Chowdhury",
+      "badge": "Senior Concierge & Bilingual Assistant",
+      "rating": 4.96,
+      "reviewsCount": 47,
+      "photo": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80",
+      "phone": "+880 1817 443322",
+      "languages": ["English", "Bengali", "Japanese"],
+      "title": "Diplomatic Zone Shopping & Lifestyle Concierge",
+      "description": "Personal shopping assistance in Gulshan & Banani artisan silk boutiques, fine dining reservations, and bilingual business coordination.",
+      "basePrice": 30,
+      "currency": "USD",
+      "subServices": ["Silk & Handicraft Shopping", "Fine Dining Reservations", "Bilingual Translation"]
+    },
+    {
+      "id": "prov-asst-02",
+      "categoryId": "travel-assistant",
+      "name": "Tanvir Rahman",
+      "badge": "Corporate & Meeting Assistant",
+      "rating": 4.94,
+      "reviewsCount": 38,
+      "photo": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&auto=format&fit=crop&q=80",
+      "phone": "+880 1715 889900",
+      "languages": ["English", "Bengali", "German"],
+      "title": "Business & Event Logistics Assistant",
+      "description": "In-person coordination for business travelers, conference attendees, local SIM/data setup, and agenda scheduling.",
+      "basePrice": 35,
+      "currency": "USD",
+      "subServices": ["Meeting Logistics", "Local SIM/Network Setup", "Executive Printing"]
+    },
     {
       "id": "prov-guide-01",
       "categoryId": "tour-guide",
@@ -43,9 +124,10 @@
       "phone": "+880 1711 002233",
       "languages": ["English", "Bengali"],
       "title": "Old Dhaka Heritage & Culinary Food Trail",
-      "description": "Exploration of historic Lalbagh Fort, Ahsan Manzil Pink Palace, Star Mosque, and legendary authentic Dhaka street food tasting.",
+      "description": "Exploration of historic Lalbagh Fort, Ahsan Manzil Pink Palace, Star Mosque, and legendary authentic Old Dhaka biryani & tea tasting.",
       "basePrice": 25,
-      "currency": "USD"
+      "currency": "USD",
+      "subServices": ["Lalbagh Fort Tour", "Ahsan Manzil Palace", "Historic Street Food Walk"]
     },
     {
       "id": "prov-guide-02",
@@ -58,30 +140,16 @@
       "phone": "+880 1712 998877",
       "languages": ["English", "Bengali", "Hindi"],
       "title": "River Buriganga Cruise & Artisan Workshops",
-      "description": "Private wooden boat cruise, brass and conch artisan workshops, and architectural hidden alleys of Old Dhaka.",
+      "description": "Private wooden boat river crossing, brass and conch shell artisan workshops, and architectural hidden alleys of Old Dhaka.",
       "basePrice": 32,
-      "currency": "USD"
+      "currency": "USD",
+      "subServices": ["Private Wooden Boat Cruise", "Artisan Quarter Access", "Golden Hour Photography"]
     },
     {
-      "id": "prov-asst-01",
-      "categoryId": "travel-assistant",
-      "name": "Nafisa Chowdhury",
-      "badge": "Senior Concierge & Translator",
-      "rating": 4.96,
-      "reviewsCount": 47,
-      "photo": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80",
-      "phone": "+880 1817 443322",
-      "languages": ["English", "Bengali", "Japanese"],
-      "title": "Diplomatic Zone Shopping & Lifestyle Concierge",
-      "description": "Personal shopping assistance in Gulshan & Banani artisan boutiques, fine dining reservations, and bilingual business coordination.",
-      "basePrice": 30,
-      "currency": "USD"
-    },
-    {
-      "id": "prov-spa-01",
-      "categoryId": "wellness-spa",
+      "id": "prov-amen-01",
+      "categoryId": "extra-services",
       "name": "Shumona Rahman",
-      "badge": "Certified Wellness Therapist",
+      "badge": "Certified In-Suite Spa Therapist",
       "rating": 4.99,
       "reviewsCount": 73,
       "photo": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80",
@@ -90,52 +158,40 @@
       "title": "In-Suite Deep Tissue & Swedish Relaxation Therapy",
       "description": "Full-body muscular relaxation with natural essential oils, herbal aromatherapy, and pressure point relief after long travel.",
       "basePrice": 35,
-      "currency": "USD"
+      "currency": "USD",
+      "subServices": ["60-Min Swedish Massage", "Herbal Aromatherapy Oils", "Tension Relief"]
     },
     {
-      "id": "prov-spa-02",
-      "categoryId": "wellness-spa",
-      "name": "Karimul Haque",
-      "badge": "Licensed Sports & Acupressure Therapist",
-      "rating": 4.94,
-      "reviewsCount": 51,
-      "photo": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80",
-      "phone": "+880 1714 665544",
-      "languages": ["English", "Bengali"],
-      "title": "Holistic Reflexology & Head-Neck Relief",
-      "description": "Targeted tension relief, foot reflexology, and circulation rejuvenation performed in the comfort of your guesthouse suite.",
-      "basePrice": 28,
-      "currency": "USD"
+      "id": "prov-amen-02",
+      "categoryId": "extra-services",
+      "name": "Chef Rokeya Begum",
+      "badge": "Master Bengali Culinary Chef",
+      "rating": 4.98,
+      "reviewsCount": 56,
+      "photo": "https://images.unsplash.com/photo-1583394293214-28ded15ee548?w=400&auto=format&fit=crop&q=80",
+      "phone": "+880 1713 445566",
+      "languages": ["Bengali", "Basic English"],
+      "title": "Private Bengali Home Dining Experience",
+      "description": "Fresh gourmet 4-course authentic dinner prepared directly in your guesthouse kitchen (Ilish mach, Kacchi, Bhartas, & Firni).",
+      "basePrice": 26,
+      "currency": "USD",
+      "subServices": ["4-Course Bengali Dinner", "Fresh Bazaar Ingredients", "Kitchen Cleanup"]
     },
     {
-      "id": "prov-ride-01",
-      "categoryId": "transport-chauffeur",
-      "name": "Rafiqul Islam",
-      "badge": "Executive Chauffeur",
-      "rating": 4.95,
-      "reviewsCount": 350,
-      "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80",
-      "phone": "+880 1819 556677",
+      "id": "prov-amen-03",
+      "categoryId": "extra-services",
+      "name": "Guesthouse Concierge Care",
+      "badge": "Housekeeping & Tech Amenities",
+      "rating": 4.96,
+      "reviewsCount": 112,
+      "photo": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&auto=format&fit=crop&q=80",
+      "phone": "+880 1711 234567",
       "languages": ["English", "Bengali"],
-      "title": "Executive Airport Pick & Drop (DAC Airport ↔ Stay)",
-      "description": "Guaranteed on-time terminal pickup with name signboard in private Toyota Premio Executive sedan (Climate Controlled, toll fees included).",
-      "basePrice": 18,
-      "currency": "USD"
-    },
-    {
-      "id": "prov-ride-02",
-      "categoryId": "transport-chauffeur",
-      "name": "Kamrul Hassan",
-      "badge": "Full-Day Dedicated Chauffeur",
-      "rating": 4.93,
-      "reviewsCount": 180,
-      "photo": "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=400&auto=format&fit=crop&q=80",
-      "phone": "+880 1718 221100",
-      "languages": ["English", "Bengali"],
-      "title": "Full-Day Private City Chauffeur (8 Hours Unlimited)",
-      "description": "Dedicated executive car and professional driver on standby for entire day trips, client meetings, and dining across Dhaka.",
-      "basePrice": 42,
-      "currency": "USD"
+      "title": "Starlink Satellite WiFi Kit & Express Laundry",
+      "description": "High-speed 250 Mbps Starlink satellite connection with dual-monitor portable workstation, plus same-day steam laundry & pressing.",
+      "basePrice": 15,
+      "currency": "USD",
+      "subServices": ["250 Mbps Starlink Terminal", "Same-Day Steam Pressing", "Luggage Storage"]
     }
   ]
 }
